@@ -46,10 +46,24 @@ Supported features(APIs) are listed below.
 
   Before generating new access token, the server will check whether the refresh token exists in the database.
 
+
 ## Scripts
+
+Here is the list for supported npm/yarn scripts.
+These are used to lint, test, build, and run the code.
+
+1. `lint`: lint the code
+2. `lint:fix`: lint the code and try auto-fix
+3. `compile`: compile typescript codes (destination: `dist` directory)
+4. `clean`: remove the compiled code
+5. `start`: run the codes
+6. `test`: run the test codes
 
 
 ## Dependencies/Environment
 
+Developed and tested with `Ubuntu 20.04.2 LTS`, with `Node v14.16.0`.
 
-## Contact
+To configure the typescript development environment easily, [gts](https://github.com/google/gts) has been used.
+Based on the `gts` style rules, I modified some to enforce rules more strictly.
+To see the modification, please check [`.eslintrc.json` file](https://github.com/hyecheol123/generic-auth-api/blob/main/.eslintrc.json).
