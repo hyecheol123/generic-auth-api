@@ -1,5 +1,7 @@
 # Generic Auth API
 
+[![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.svg)](https://github.com/google/gts)
+
 Simple template for Auth API using JWT with Bearer Authentication.
 Both access token and refresh token are used.
 
