@@ -21,6 +21,10 @@ Supported features(APIs) are listed below.
   Passwords are secured by cryptographic hash function.
   This let the others except for the user, including server admin, not to look up the password.
 
+- **Remove Users**
+
+  This API let admin user (or other services) to remove existing user's login credential from the server.
+
 - **Login** (with username and password)  
 
   This API let user to signin and retrieve access/refresh tokens from server.  
@@ -69,6 +73,15 @@ Based on the `gts` style rules, I modified some to enforce rules more strictly.
 To see the modification, please check [`.eslintrc.json` file](https://github.com/hyecheol123/generic-auth-api/blob/main/.eslintrc.json).
 
 For the database, this project is relying on [MariaDB](https://mariadb.org/), which almost identical with the MySQL.
+In this project, all informations are stored in `auth_api` database.  
+`user` table in the `auth_api` database contains
+- `id` (smallint(6) NOT NULL AUTO_INCREMENT PRIMARY KEY)
+- `username` (varchar(12) NOT NULL)
+- `password` (char(88) NOT NULL)
+- `timestamp` (timestamp NOT NULL)
+- `admin` (BOOLEAN NOT NULL).
 
 [Express](https://expressjs.com/) is a web framework for node.js.
 This project used it to develop and maintain APIs more conveniently.
+
+[ajv](https://ajv.js.org/) is used for runtime type checks.

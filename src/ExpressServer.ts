@@ -12,6 +12,7 @@ import ServerConfig from './ServerConfig';
 import AuthenticationError from './exceptions/AuthenticationError';
 import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
+import adminRouter from './routes/admin';
 
 /**
  * Class contains Express Application and other relevent instances/functions
@@ -45,7 +46,7 @@ export default class ExpressServer {
 
     // link functions to verify JWT Tokens
     // function to verify access token, return username
-    this.app.locals.accessTokenVerify = (req: express.Request): string => {
+    this.app.locals.accessTokenVerify = (req: express.Request): AuthToken => {
       if ('X-ACCESS-TOKEN' in req.cookies) {
         let tokenContents: AuthToken; // place to store contents of JWT
         // Verify and retrieve the token contents
@@ -61,14 +62,14 @@ export default class ExpressServer {
         if (tokenContents.type !== 'access') {
           throw new AuthenticationError();
         } else {
-          return tokenContents.username;
+          return tokenContents;
         }
       } else {
         throw new AuthenticationError();
       }
     };
     // function to verify refresh token, return username
-    this.app.locals.refreshTokenVerify = (req: express.Request): string => {
+    this.app.locals.refreshTokenVerify = (req: express.Request): AuthToken => {
       if ('X-REFRESH-TOKEN' in req.cookies) {
         let tokenContents: AuthToken; // place to store contents of JWT
         // Verify and retrieve the token contents
@@ -84,7 +85,7 @@ export default class ExpressServer {
         if (tokenContents.type !== 'refresh') {
           throw new AuthenticationError();
         } else {
-          return tokenContents.username;
+          return tokenContents;
         }
       } else {
         throw new AuthenticationError();
@@ -96,6 +97,7 @@ export default class ExpressServer {
     this.app.use(cookieParser());
 
     // TODO: Add List of Routers
+    this.app.use('/auth/admin', adminRouter);
 
     // Default Error Handler
     this.app.use(

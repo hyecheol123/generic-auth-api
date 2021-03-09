@@ -10,4 +10,5 @@
 export default interface AuthToken {
   username: string; // contains username of the owner of the token
   type: 'access' | 'refresh'; // type of the token
+  admin?: boolean; // optional parameter indicating admin user
 }
