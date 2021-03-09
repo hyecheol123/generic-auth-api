@@ -1,7 +1,8 @@
 /**
  * Configuration for the Server
  *
- * This file contains important credentials. Should not be uploaded to version control system (git).
+ * This file contains important credentials.
+ * Should not be uploaded to version control system (git).
  *
  * @author Hyecheol (Jerry) Jang
  */
@@ -17,7 +18,7 @@ export default class ServerConfig extends ServerConfigTemplate {
    * Function to create hashed password
    *
    * Detail of this function also should not be disclosed for security purpose.
-   * Should not be uploaded to version contro system (git).
+   * Should not be uploaded to version control system (git).
    *
    * @param id user's id (used to generate salt)
    * @param additionalSalt unique additional salt element for each user

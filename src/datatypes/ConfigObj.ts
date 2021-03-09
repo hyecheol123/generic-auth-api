@@ -11,7 +11,7 @@
 export default interface ConfigObj {
   db: DbObj; // contain database configuration parameters
   expressPort: number; // indicate express server port
-  jwtKeys: jwtKeyObj; // indicate jwt token credentials
+  jwtKeys: JwtKeyObj; // indicate jwt token credentials
 }
 
 /**
@@ -29,7 +29,7 @@ interface DbObj {
  * Interface to define jwtKeyObj object
  * This type of object should be contained in the ConfigObj
  */
-interface jwtKeyObj {
-  jwtSecretKey: string; // key that will used to validate the token
-  jwtRefreshKey: string; // different key that will used to validate refresh token
+interface JwtKeyObj {
+  jwtSecretKey: string; // key that used to validate the token
+  jwtRefreshKey: string; // different key that used to  validate refresh token
 }
