@@ -6,7 +6,7 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import {BinaryLike} from 'node:crypto';
+import {BinaryLike} from 'crypto';
 import ConfigObj from './datatypes/ConfigObj';
 
 /**
@@ -56,6 +56,7 @@ export default abstract class ServerConfigTemplate {
    * @param id user's id (used to generate salt)
    * @param additionalSalt unique additional salt element for each user
    * @param secretString string to be hashed (password, etc)
+   * @returns {string} Hashed Password
    */
   abstract hash(
     id: BinaryLike,

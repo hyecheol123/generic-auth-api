@@ -7,13 +7,31 @@
  * @author Hyecheol (Jerry) Jang
  */
 
-import * as crypto from 'node:crypto';
+import * as crypto from 'crypto';
+import ConfigObj from './datatypes/ConfigObj';
 import ServerConfigTemplate from './ServerConfigTemplate';
 
 /**
  * Module contains the configuration
  */
 export default class ServerConfig extends ServerConfigTemplate {
+  /**
+   * Constructor for ServerConfig
+   */
+  constructor() {
+    const config: ConfigObj = {
+      db: {
+        dbURL: 'localhost',
+        dbPort: 3306,
+        dbUsername: 'apptest',
+        dbPassword: '',
+      },
+      expressPort: 3000,
+      jwtKeys: {jwtSecretKey: 'keySecret', jwtRefreshKey: 'keySecret'},
+    };
+    super(config);
+  }
+
   /**
    * Function to create hashed password
    *
@@ -23,6 +41,7 @@ export default class ServerConfig extends ServerConfigTemplate {
    * @param id user's id (used to generate salt)
    * @param additionalSalt unique additional salt element for each user
    * @param secretString string to be hashed (password, etc)
+   * @returns {string} Hashed Password
    */
   hash(
     id: crypto.BinaryLike,
