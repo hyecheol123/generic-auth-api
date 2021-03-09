@@ -6,24 +6,13 @@
  * @author Hyecheol (Jerry) Jang
  */
 
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
+import ServerConfigTemplate from './ServerConfigTemplate';
 
 /**
  * Module contains the configuration
  */
-export default class ServerConfig {
-  // DB Config
-  static dbURL = '[Replace with Your DB URL]'; // Include port information here
-  static dbUsername = '[Replace with your DB Username]';
-  static dbPassword = '[Replace with your DB Password]';
-
-  // Express API Server Setup
-  static expressPort = 3000;
-
-  // JWT Token Confidentials
-  static jwtSecretKey = '[Replace with your secret key]';
-  static jwtRefreshKey = '[Replace with your refresh key]';
-
+export default class ServerConfig extends ServerConfigTemplate {
   /**
    * Function to create hashed password
    *
@@ -34,7 +23,7 @@ export default class ServerConfig {
    * @param additionalSalt unique additional salt element for each user
    * @param secretString string to be hashed (password, etc)
    */
-  static hash(
+  hash(
     id: crypto.BinaryLike,
     additionalSalt: crypto.BinaryLike,
     secretString: crypto.BinaryLike

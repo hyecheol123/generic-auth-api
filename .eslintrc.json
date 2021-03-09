@@ -6,7 +6,6 @@
     "@typescript-eslint/no-use-before-define": "error",
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/explicit-function-return-type": "warn",
-    "@typescript-eslint/ban-types": "warn",
-    "node/no-missing-import": "error"
+    "@typescript-eslint/ban-types": "warn"
   }
 }

@@ -67,3 +67,7 @@ Developed and tested with `Ubuntu 20.04.2 LTS`, with `Node v14.16.0`.
 To configure the typescript development environment easily, [gts](https://github.com/google/gts) has been used.
 Based on the `gts` style rules, I modified some to enforce rules more strictly.
 To see the modification, please check [`.eslintrc.json` file](https://github.com/hyecheol123/generic-auth-api/blob/main/.eslintrc.json).
+
+For the database, this project is relying on [MariaDB](https://mariadb.org/), which almost identical with the MySQL.
+
+- express
