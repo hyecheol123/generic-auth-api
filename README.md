@@ -70,4 +70,5 @@ To see the modification, please check [`.eslintrc.json` file](https://github.com
 
 For the database, this project is relying on [MariaDB](https://mariadb.org/), which almost identical with the MySQL.
 
-- express
+[Express](https://expressjs.com/) is a web framework for node.js.
+This project used it to develop and maintain APIs more conveniently.
