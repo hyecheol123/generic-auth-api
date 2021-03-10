@@ -38,6 +38,7 @@ export default class TestEnv {
       port: this.testConfig.dbPort,
       user: this.testConfig.dbUsername,
       password: this.testConfig.dbPassword,
+      database: this.testConfig.defaultDatabase,
       compress: true,
     });
 

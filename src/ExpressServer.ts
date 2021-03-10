@@ -34,6 +34,7 @@ export default class ExpressServer {
       port: config.dbPort,
       user: config.dbUsername,
       password: config.dbPassword,
+      database: config.defaultDatabase,
       compress: true,
     });
 

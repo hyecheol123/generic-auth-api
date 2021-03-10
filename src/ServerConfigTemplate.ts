@@ -19,6 +19,7 @@ export default abstract class ServerConfigTemplate {
   readonly dbPort: number;
   readonly dbUsername: string;
   readonly dbPassword: string;
+  readonly defaultDatabase: string;
 
   // Express API Server Setup
   readonly expressPort: number;
@@ -38,6 +39,7 @@ export default abstract class ServerConfigTemplate {
     this.dbPort = config.db.dbPort;
     this.dbUsername = config.db.dbUsername;
     this.dbPassword = config.db.dbPassword;
+    this.defaultDatabase = config.db.defaultDatabase;
 
     // Setup Express API Server
     this.expressPort = config.expressPort;

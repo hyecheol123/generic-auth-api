@@ -23,6 +23,7 @@ interface DbObj {
   dbPort: number; // Port number to access database server
   dbUsername: string;
   dbPassword: string;
+  defaultDatabase: string; // default database name
 }
 
 /**
