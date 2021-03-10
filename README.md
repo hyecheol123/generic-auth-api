@@ -74,12 +74,24 @@ To see the modification, please check [`.eslintrc.json` file](https://github.com
 
 For the database, this project is relying on [MariaDB](https://mariadb.org/), which almost identical with the MySQL.
 In this project, all informations are stored in `auth_api` database.  
-`user` table in the `auth_api` database contains
-- `id` (smallint(6) NOT NULL AUTO_INCREMENT PRIMARY KEY)
-- `username` (varchar(12) NOT NULL)
-- `password` (char(88) NOT NULL)
-- `timestamp` (timestamp NOT NULL)
-- `admin` (BOOLEAN NOT NULL).
+
+SQL Query to create `user` table is 
+``` SQL
+CREATE TABLE user (
+  id VARCHAR(12) NOT NULL PRIMARY KEY,
+  password CHAR(88) NOT NULL,
+  membersince TIMESTAMP NULL DEFAULT NULL,
+  admin BOOLEAN NOT NULL);
+```
+
+SQL Query to create `session` table is
+``` SQL
+CREATE TABLE session (
+  token VARCHAR(400) NOT NULL PRIMARY KEY,
+  expiresAt TIMESTAMP NULL DEFAULT NULL,
+  userID VARCHAR(12) NOT NULL,
+  INDEX userIDIdx(userID));
+```
 
 [Express](https://expressjs.com/) is a web framework for node.js.
 This project used it to develop and maintain APIs more conveniently.
