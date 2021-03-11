@@ -42,8 +42,8 @@ jobs:
       # Setup MariaDB
       - name: Setup MariaDB test account
         run: |
-          apt update
-          apt install -y mysql-client
+          sudo apt update
+          sudo apt install -y mysql-client
           mysql --host mariadb --username=root --password=rootpw -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
 
       # Install Node.JS
