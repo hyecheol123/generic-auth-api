@@ -32,6 +32,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: rootpw
         ports:
           - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     name: Node 14 - ${{ matrix.architecture }} on ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
