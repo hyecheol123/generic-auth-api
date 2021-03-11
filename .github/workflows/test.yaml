@@ -15,36 +15,30 @@ jobs:
   # This workflow contains a single job called "build"
   test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os:
+          - ubuntu-latest
+          - ubuntu-20.04
         node_version:
+          - 12
           - 14
         architecture:
           - x64
           - arm64
     
-#     # List of services used for this workload
-#     services:
-#       mariadb:
-#         image: mariadb:latest
-#         env:
-#           MYSQL_ROOT_PASSWORD: rootpw
-#         ports:
-#           - 3306
-#         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
-    name: Node 14 - ${{ matrix.architecture }} on ubuntu-latest
+    name: Node {{ matrix.node_version }} - ${{ matrix.architecture }} on {{ matrix.os }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Setup MariaDB
-      - name: Setup MariaDB
+      # Setup MySQL (MariaDB Not supported for GitHub Action)
+      - name: Setup MySQL
         run: |
-          sudo systemctl start mariadb
-          sudo mariadb -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
+          sudo /etc/init.d/mysql start
+          mysql -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
 
       # Install Node.JS
       - name: Setup Node.js
