@@ -125,4 +125,56 @@ describe('POST /login - Login with username and password', () => {
     }
     done();
   });
+
+  test('Bad Request', async done => {
+    // Request without body
+    let response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send();
+    expect(response.status).toBe(400);
+
+    // Request without username
+    response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({password: 'rootpw!!'});
+    expect(response.status).toBe(400);
+
+    // Request without password
+    response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'admin'});
+    expect(response.status).toBe(400);
+    let queryResult = await testEnv.dbClient.query('SELECT * FROM session');
+    expect(queryResult.length).toBe(0);
+
+    // Request with additional parameters
+    response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'admin', password: 'rootpw!!', admin: true});
+    expect(response.status).toBe(400);
+    queryResult = await testEnv.dbClient.query('SELECT * FROM session');
+    expect(queryResult.length).toBe(0);
+
+    done();
+  });
+
+  test('Authentication Error - User Not Found', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user', password: 'password12!'});
+    expect(response.status).toBe(401);
+    const queryResult = await testEnv.dbClient.query('SELECT * FROM session');
+    expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Authentication Error - Wrong Password', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user2', password: 'password12!!'});
+    expect(response.status).toBe(401);
+    const queryResult = await testEnv.dbClient.query('SELECT * FROM session');
+    expect(queryResult.length).toBe(0);
+    done();
+  });
 });
