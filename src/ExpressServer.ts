@@ -12,7 +12,7 @@ import ServerConfig from './ServerConfig';
 import AuthenticationError from './exceptions/AuthenticationError';
 import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
-import adminRouter from './routes/admin';
+import authRouter from './routes/auth';
 
 /**
  * Class contains Express Application and other relevent instances/functions
@@ -76,7 +76,7 @@ export default class ExpressServer {
         // Verify and retrieve the token contents
         try {
           tokenContents = jwt.verify(
-            req.cookies['X-ACCESS-TOKEN'].split(' ')[1],
+            req.cookies['X-REFRESH-TOKEN'].split(' ')[1],
             config.jwtRefreshKey,
             {algorithms: ['HS512']}
           ) as AuthToken;
@@ -97,8 +97,8 @@ export default class ExpressServer {
     this.app.use(express.json());
     this.app.use(cookieParser());
 
-    // TODO: Add List of Routers
-    this.app.use('/auth/admin', adminRouter);
+    // Add List of Routers
+    this.app.use('/', authRouter);
 
     // Default Error Handler
     this.app.use(

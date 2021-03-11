@@ -22,15 +22,23 @@ export default class TestEnv {
   testConfig: TestConfig; // Configuration Object (to use hash function later)
   expressServer: ExpressServer; // Express Server Object
   dbClient: mariadb.Pool; // DB Client Object
-  tableIdentifier: string; // unique identifier string for the table
+  dbIdentifier: string; // unique identifier string for the database
 
   /**
    * Constructor for TestEnv
    *  - Setup express server
    *  - Setup db client
+   *
+   * @param identifier Identifier to specify the test
    */
-  constructor() {
-    this.testConfig = new TestConfig(); // Generate TestConfig obj
+  constructor(identifier: string) {
+    // Hash identifier to create new identifier string
+    this.dbIdentifier = crypto
+      .createHash('md5')
+      .update(identifier)
+      .digest('hex');
+    // Generate TestConfig obj
+    this.testConfig = new TestConfig(this.dbIdentifier);
 
     // Create db connection pool
     this.dbClient = mariadb.createPool({
@@ -38,9 +46,13 @@ export default class TestEnv {
       port: this.testConfig.dbPort,
       user: this.testConfig.dbUsername,
       password: this.testConfig.dbPassword,
-      database: this.testConfig.defaultDatabase,
       compress: true,
     });
+
+    // CREATE/USE DATABASE
+    this.dbClient.query(
+      `CREATE DATABASE ${this.dbIdentifier}; USE ${this.dbIdentifier};`
+    );
 
     // Setup ExpressServer
     this.expressServer = new ExpressServer(this.testConfig);
@@ -53,15 +65,8 @@ export default class TestEnv {
    *
    * @param dbTableList List of DBTable object that indicate
    *   the list of DBTables that will be used during the test.
-   * @param identifier Identifier to specify the test
    */
-  async start(dbTableList: DBTable[], identifier: string): Promise<void> {
-    // Hash identifier to create new identifier string
-    this.tableIdentifier = crypto
-      .createHash('md5')
-      .update(identifier)
-      .digest('hex');
-
+  async start(dbTableList: DBTable[]): Promise<void> {
     // Remove duplicates in the dbTableList
     dbTableList = Array.from(new Set(dbTableList));
 
@@ -86,8 +91,8 @@ export default class TestEnv {
   private async userTable(): Promise<void> {
     // Create Table
     await this.dbClient.query(
-      `CREATE TABLE user_${this.tableIdentifier} (` +
-        'id VARCHAR(12) NOT NULL PRIMARY KEY, ' +
+      'CREATE TABLE user (' +
+        'username VARCHAR(12) NOT NULL PRIMARY KEY, ' +
         'password CHAR(88) NOT NULL, ' +
         'membersince TIMESTAMP NULL DEFAULT NULL, ' +
         'admin BOOLEAN NOT NULL) ENGINE = MEMORY;'
@@ -122,8 +127,7 @@ export default class TestEnv {
 
     // Insert User Information (3 user)
     await this.dbClient.batch(
-      `INSERT INTO user_${this.tableIdentifier}` +
-        '(id, password, membersince, admin) values (?, ?, ?, ?)',
+      'INSERT INTO user (id, password, membersince, admin) values (?, ?, ?, ?)',
       sampleUsers
     );
   }
@@ -134,7 +138,7 @@ export default class TestEnv {
   private async sessionTable(): Promise<void> {
     // Create Table
     await this.dbClient.query(
-      `CREATE TABLE session_${this.tableIdentifier} (` +
+      'CREATE TABLE session (' +
         'token VARCHAR(400) NOT NULL PRIMARY KEY, ' +
         'expiresAt TIMESTAMP NULL DEFAULT NULL, ' +
         'userID VARCHAR(12) NOT NULL, ' +
@@ -149,11 +153,8 @@ export default class TestEnv {
    *  - Remove used table and close database connection from the express server
    */
   async stop(): Promise<void> {
-    // Drop tables
-    await this.dbClient.query(
-      'DROP TABLE IF EXISTS ' +
-        `user_${this.tableIdentifier}, session_${this.tableIdentifier};`
-    );
+    // Drop database
+    await this.dbClient.query(`DROP DATABASE ${this.dbIdentifier}`);
 
     // Close database connection of the express server
     await this.expressServer.closeDB();

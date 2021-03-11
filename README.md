@@ -32,6 +32,12 @@ Supported features(APIs) are listed below.
   Refresh tokens are stored in the database, while access tokens are not stored.
   On the client side, all tokens are stored as the Cookies.
 
+  Cookie parameter name for access token is `X-ACCESS-TOKEN`, 
+  and refresh token is `X-REFRESH-TOKEN`.
+
+  **NOTE THAT COOKIE SECURITY OPTIONS ARE NOT SET**  
+  - Need to set token and cookie's path, domain, and secured option.
+
 - **Logout**  
 
   This API clears the related Cookies that store access/refresh token 
@@ -78,7 +84,7 @@ In this project, all informations are stored in `auth_api` database.
 SQL Query to create `user` table is 
 ``` SQL
 CREATE TABLE user (
-  id VARCHAR(12) NOT NULL PRIMARY KEY,
+  username VARCHAR(12) NOT NULL PRIMARY KEY,
   password CHAR(88) NOT NULL,
   membersince TIMESTAMP NULL DEFAULT NULL,
   admin BOOLEAN NOT NULL);

@@ -15,15 +15,17 @@ import ServerConfigTemplate from '../src/ServerConfigTemplate';
 export default class TestConfig extends ServerConfigTemplate {
   /**
    * Constructor for TestConfig
+   *
+   * @param identifier Identifier to specify the test database
    */
-  constructor() {
+  constructor(identifier: string) {
     const config: ConfigObj = {
       db: {
         dbURL: 'localhost',
         dbPort: 3306,
         dbUsername: 'testdb',
         dbPassword: '',
-        defaultDatabase: 'auth-api',
+        defaultDatabase: identifier,
       },
       expressPort: 3000,
       jwtKeys: {jwtSecretKey: 'keySecret', jwtRefreshKey: 'keySecret'},

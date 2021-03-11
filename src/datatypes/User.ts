@@ -1,6 +1,5 @@
 /**
- * Define type for New User Form, containing login credentials
- * and other informations that needed to create new user properly.
+ * Define type for each user entry
  * Validator also implemented
  *
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
@@ -12,9 +11,9 @@ import {LoginCredentials} from './LoginCredentials';
 /**
  * Interface for NewUser
  */
-export interface NewUserForm extends LoginCredentials {
+export interface User extends LoginCredentials {
+  membersince: string; // in ISO Date format
   admin?: boolean;
-  timestamp: Date; // in JSON Date format
 }
 
 // Validator for JSON object containing information of NewUserForm
