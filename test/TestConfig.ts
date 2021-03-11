@@ -25,7 +25,7 @@ export default class TestConfig extends ServerConfigTemplate {
         dbPort: 3306,
         dbUsername: 'testdb',
         dbPassword: '',
-        defaultDatabase: identifier,
+        defaultDatabase: `db_${identifier}`,
       },
       expressPort: 3000,
       jwtKeys: {jwtSecretKey: 'keySecret', jwtRefreshKey: 'keySecret'},

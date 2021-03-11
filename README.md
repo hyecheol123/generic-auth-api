@@ -95,8 +95,8 @@ SQL Query to create `session` table is
 CREATE TABLE session (
   token VARCHAR(400) NOT NULL PRIMARY KEY,
   expiresAt TIMESTAMP NULL DEFAULT NULL,
-  userID VARCHAR(12) NOT NULL,
-  INDEX userIDIdx(userID));
+  username VARCHAR(12) NOT NULL,
+  INDEX usernameIdx(username));
 ```
 
 [Express](https://expressjs.com/) is a web framework for node.js.

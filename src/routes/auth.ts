@@ -46,7 +46,7 @@ authRouter.post(
       // Check Password
       const hashedPassword = req.app.locals.hash(
         user.username,
-        user.membersince,
+        new Date(user.membersince).toISOString(),
         loginCredential.password
       );
       if (hashedPassword !== user.password) {
@@ -79,7 +79,7 @@ authRouter.post(
 
       // Save Refresh Token to DB
       await req.app.locals.dbClient.query(
-        'INSERT INTO session (token, expiresAt, userID) values (?, ?, ?)',
+        'INSERT INTO session (token, expiresAt, username) values (?, ?, ?)',
         [refreshToken, refreshTokenExpires, user.username]
       );
 
@@ -88,9 +88,9 @@ authRouter.post(
         httpOnly: true,
         maxAge: 15 * 60 * 1000,
       };
-      res.cookie('X-ACCESS-TOKEN', `Bearer ${accessToken}`, cookieOption);
+      res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
       cookieOption.maxAge = 120 * 60 * 120;
-      res.cookie('X-REFRESH-TOKEN', `Bearer ${refreshToken}`, cookieOption);
+      res.cookie('X-REFRESH-TOKEN', refreshToken, cookieOption);
       res.status(200).send();
     } catch (e) {
       next(e);

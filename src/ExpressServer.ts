@@ -53,7 +53,7 @@ export default class ExpressServer {
         // Verify and retrieve the token contents
         try {
           tokenContents = jwt.verify(
-            req.cookies['X-ACCESS-TOKEN'].split(' ')[1],
+            req.cookies['X-ACCESS-TOKEN'],
             config.jwtSecretKey,
             {algorithms: ['HS512']}
           ) as AuthToken;
@@ -76,7 +76,7 @@ export default class ExpressServer {
         // Verify and retrieve the token contents
         try {
           tokenContents = jwt.verify(
-            req.cookies['X-REFRESH-TOKEN'].split(' ')[1],
+            req.cookies['X-REFRESH-TOKEN'],
             config.jwtRefreshKey,
             {algorithms: ['HS512']}
           ) as AuthToken;
@@ -123,6 +123,5 @@ export default class ExpressServer {
    */
   async closeDB(): Promise<void> {
     await this.app.locals.dbClient.end();
-    console.log('DB Connection Closed');
   }
 }

@@ -40,19 +40,30 @@ export default class TestEnv {
     // Generate TestConfig obj
     this.testConfig = new TestConfig(this.dbIdentifier);
 
-    // Create db connection pool
+    // Create test database
+    mariadb
+      .createConnection({
+        host: this.testConfig.dbURL,
+        port: this.testConfig.dbPort,
+        user: this.testConfig.dbUsername,
+        password: this.testConfig.dbPassword,
+        compress: true,
+      })
+      .then(conn => {
+        conn.query(`CREATE DATABASE db_${this.dbIdentifier};`).then(() => {
+          conn.end();
+        });
+      });
+
+    // Setup DB Connection Pool
     this.dbClient = mariadb.createPool({
       host: this.testConfig.dbURL,
       port: this.testConfig.dbPort,
       user: this.testConfig.dbUsername,
       password: this.testConfig.dbPassword,
+      database: `db_${this.dbIdentifier}`,
       compress: true,
     });
-
-    // CREATE/USE DATABASE
-    this.dbClient.query(
-      `CREATE DATABASE ${this.dbIdentifier}; USE ${this.dbIdentifier};`
-    );
 
     // Setup ExpressServer
     this.expressServer = new ExpressServer(this.testConfig);
@@ -71,7 +82,7 @@ export default class TestEnv {
     dbTableList = Array.from(new Set(dbTableList));
 
     // Put the Data to the Database
-    for (const i in dbTableList) {
+    for (const i of dbTableList) {
       switch (i) {
         case DBTable.USER:
           await this.userTable();
@@ -101,33 +112,33 @@ export default class TestEnv {
     // Sample Data
     const sampleUsers = [];
     // user1, password
-    let userTimestamp = new Date('2021-03-10T00:50:43.309Z');
+    let userTimestamp = new Date('2021-03-10T00:50:43.000Z');
     sampleUsers.push([
       'user1',
       this.testConfig.hash('user1', userTimestamp.toISOString(), 'password'),
-      userTimestamp.toISOString(),
+      userTimestamp,
       false,
     ]);
     // user2, password12!
-    userTimestamp = new Date('2021-03-07T01:15:42.200Z');
+    userTimestamp = new Date('2021-03-07T01:15:42.000Z');
     sampleUsers.push([
       'user2',
       this.testConfig.hash('user2', userTimestamp.toISOString(), 'password12!'),
-      userTimestamp.toISOString(),
+      userTimestamp,
       false,
     ]);
     // admin, rootpw!!
-    userTimestamp = new Date('2021-02-07T01:15:36.198Z');
+    userTimestamp = new Date('2021-02-07T01:15:36.000Z');
     sampleUsers.push([
       'admin',
       this.testConfig.hash('admin', userTimestamp.toISOString(), 'rootpw!!'),
-      userTimestamp.toISOString,
+      userTimestamp,
       true,
     ]);
 
     // Insert User Information (3 user)
     await this.dbClient.batch(
-      'INSERT INTO user (id, password, membersince, admin) values (?, ?, ?, ?)',
+      'INSERT INTO user (username, password, membersince, admin) values (?, ?, ?, ?)',
       sampleUsers
     );
   }
@@ -141,8 +152,8 @@ export default class TestEnv {
       'CREATE TABLE session (' +
         'token VARCHAR(400) NOT NULL PRIMARY KEY, ' +
         'expiresAt TIMESTAMP NULL DEFAULT NULL, ' +
-        'userID VARCHAR(12) NOT NULL, ' +
-        'INDEX userIDIdx(userID)) ENGINE = MEMORY;'
+        'username VARCHAR(12) NOT NULL, ' +
+        'INDEX usernameIdx(username)) ENGINE = MEMORY;'
     );
 
     // Sessions will be created by calling Login API
@@ -154,7 +165,7 @@ export default class TestEnv {
    */
   async stop(): Promise<void> {
     // Drop database
-    await this.dbClient.query(`DROP DATABASE ${this.dbIdentifier}`);
+    await this.dbClient.query(`DROP DATABASE db_${this.dbIdentifier}`);
 
     // Close database connection of the express server
     await this.expressServer.closeDB();
