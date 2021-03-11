@@ -42,7 +42,7 @@ jobs:
       - name: Setup MySQL
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';" -u ${{ env.DB_USER }} -p {{ env.DB_PASSWORD }}
+          mysql -e "SHOW DATABASES;" -u ${{ env.DB_USER }} -p {{ env.DB_PASSWORD }}
 
       # Install Node.JS
       - name: Setup Node.js
