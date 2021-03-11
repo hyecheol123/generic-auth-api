@@ -24,15 +24,15 @@ jobs:
           - x64
           - arm64
     
-    # List of services used for this workload
-    services:
-      mariadb:
-        image: mariadb:latest
-        env:
-          MYSQL_ROOT_PASSWORD: rootpw
-        ports:
-          - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+#     # List of services used for this workload
+#     services:
+#       mariadb:
+#         image: mariadb:latest
+#         env:
+#           MYSQL_ROOT_PASSWORD: rootpw
+#         ports:
+#           - 3306
+#         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     name: Node 14 - ${{ matrix.architecture }} on ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -41,9 +41,10 @@ jobs:
       - uses: actions/checkout@v2
 
       # Setup MariaDB
-      - name: Setup MariaDB test account
+      - name: Setup MariaDB
         run: |
-          mysql --host mariadb --port 3306 --user root --password rootpw -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
+          sudo systemctl start mariadb
+          sudo mariadb -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
 
       # Install Node.JS
       - name: Setup Node.js
