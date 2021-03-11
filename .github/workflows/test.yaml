@@ -28,7 +28,11 @@ jobs:
           - x64
           - arm64
     
-    name: Node {{ matrix.node_version }} - ${{ matrix.architecture }} on {{ matrix.os }}
+    name: Node ${{ matrix.node_version }} - ${{ matrix.architecture }} on ${{ matrix.os }}
+    env:
+      DB_USER: root
+      DB_PASSWORD: root
+    
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -38,7 +42,7 @@ jobs:
       - name: Setup MySQL
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
+          mysql -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';" -u${{ env.DB_USER }} -p{{ env.DB_PASSWORD }}
 
       # Install Node.JS
       - name: Setup Node.js
