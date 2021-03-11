@@ -72,7 +72,7 @@ describe('POST /login - Login with username and password', () => {
     expect(queryResult[0].token).toBe(cookie[1]);
     if (
       new Date(queryResult[0].expiresAt) >
-      new Date(new Date().getTime() + 120 * 60000)
+      new Date(new Date().getTime() + 120 * 60000 + 1000)
     ) {
       fail();
     }
@@ -119,7 +119,7 @@ describe('POST /login - Login with username and password', () => {
     expect(queryResult[0].token).toBe(cookie[1]);
     if (
       new Date(queryResult[0].expiresAt) >
-      new Date(new Date().getTime() + 120 * 60000)
+      new Date(new Date().getTime() + 120 * 60000 + 1000)
     ) {
       fail();
     }
