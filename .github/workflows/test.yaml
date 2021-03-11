@@ -31,7 +31,7 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: rootpw
         ports:
-          - 3306:3306
+          - 3306
     
     name: Node 14 - ${{ matrix.architecture }} on ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -42,7 +42,7 @@ jobs:
       # Setup MariaDB
       - name: Setup MariaDB test account
         run: |
-          mysql --user root --password rootpw -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
+          mysql --host mariadb --port 3306 --user root --password rootpw -e "CREATE USER 'testdb'@'localhost'; GRANT ALL PRIVILEGES ON *.* to 'testdb'@'localhost';"
 
       # Install Node.JS
       - name: Setup Node.js
