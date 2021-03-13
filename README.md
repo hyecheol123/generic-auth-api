@@ -51,7 +51,7 @@ Supported features(APIs) are listed below.
 
   This API removes refresh tokens that are not associated with the current session from the database.
 
-- **Renew Tokens**
+- **Renew Tokens** `GET /renew`
   
   This API creates new access token based on the information of the provided refresh token.
   The new access token will replace the old access token.

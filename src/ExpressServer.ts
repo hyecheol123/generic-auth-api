@@ -13,6 +13,7 @@ import AuthenticationError from './exceptions/AuthenticationError';
 import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
 import authRouter from './routes/auth';
+import Session from './datatypes/Session';
 
 /**
  * Class contains Express Application and other relevent instances/functions
@@ -70,27 +71,41 @@ export default class ExpressServer {
       }
     };
     // function to verify refresh token, return username
-    this.app.locals.refreshTokenVerify = (req: express.Request): AuthToken => {
-      if ('X-REFRESH-TOKEN' in req.cookies) {
-        let tokenContents: AuthToken; // place to store contents of JWT
-        // Verify and retrieve the token contents
-        try {
-          tokenContents = jwt.verify(
-            req.cookies['X-REFRESH-TOKEN'],
-            config.jwtRefreshKey,
-            {algorithms: ['HS512']}
-          ) as AuthToken;
-        } catch (e) {
-          throw new AuthenticationError();
-        }
-        if (tokenContents.type !== 'refresh') {
-          throw new AuthenticationError();
-        } else {
-          return tokenContents;
-        }
-      } else {
+    this.app.locals.refreshTokenVerify = async (
+      req: express.Request
+    ): Promise<AuthToken> => {
+      if (!('X-REFRESH-TOKEN' in req.cookies)) {
+        // No token provided
         throw new AuthenticationError();
       }
+
+      let tokenContents: AuthToken; // place to store contents of JWT
+      // Verify and retrieve the token contents
+      try {
+        tokenContents = jwt.verify(
+          req.cookies['X-REFRESH-TOKEN'],
+          config.jwtRefreshKey,
+          {algorithms: ['HS512']}
+        ) as AuthToken;
+      } catch (e) {
+        throw new AuthenticationError();
+      }
+      if (tokenContents.type !== 'refresh') {
+        throw new AuthenticationError();
+      }
+
+      // Check Token in the Database
+      const dbResult = await this.app.locals.dbClient.query(
+        'SELECT * FROM session WHERE token = ?',
+        [req.cookies['X-REFRESH-TOKEN']]
+      );
+      if (
+        dbResult.length !== 1 ||
+        new Date((dbResult[0] as Session).expiresAt) < new Date()
+      ) {
+        throw new AuthenticationError();
+      }
+      return tokenContents;
     };
 
     // Setup Parsers

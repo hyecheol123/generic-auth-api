@@ -12,7 +12,6 @@ import {
   validateLoginCredentials,
 } from '../datatypes/LoginCredentials';
 import {User} from '../datatypes/User';
-import Session from '../datatypes/Session';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 
@@ -109,17 +108,13 @@ authRouter.delete(
   ) => {
     try {
       // Verify the refreshToken
-      req.app.locals.refreshTokenVerify(req);
+      await req.app.locals.refreshTokenVerify(req);
 
-      // Check Token in the Database and delete from the database
-      const dbResult = await req.app.locals.dbClient.query(
+      // Delete from the database
+      await req.app.locals.dbClient.query(
         'DELETE FROM session WHERE token = ?',
         [req.cookies['X-REFRESH-TOKEN']]
       );
-      if (dbResult.affectedRows < 1) {
-        // If token not found in the Databases
-        throw new AuthenticationError();
-      }
 
       // Clear Cookie & Response
       res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true});
@@ -141,20 +136,8 @@ authRouter.delete(
   ) => {
     try {
       // verify the refresh token
-      const username = (req.app.locals.refreshTokenVerify(req) as AuthToken)
-        .username;
-
-      // Check Token in the Database
-      const dbResult = await req.app.locals.dbClient.query(
-        'SELECT * FROM session WHERE token = ?',
-        [req.cookies['X-REFRESH-TOKEN']]
-      );
-      if (
-        dbResult.length !== 1 ||
-        new Date((dbResult[0] as Session).expiresAt) < new Date()
-      ) {
-        throw new AuthenticationError();
-      }
+      const tokenContents = await req.app.locals.refreshTokenVerify(req);
+      const username = (tokenContents as AuthToken).username;
 
       // Logout From other Session (Remove DB)
       await req.app.locals.dbClient.query(
@@ -169,5 +152,18 @@ authRouter.delete(
     }
   }
 );
+
+// // GET /renew: Renew Tokens by using RefreshToken
+// authRouther.get('/renew', async (
+//   req: express.Request,
+//   res: express.Response,
+//   next: express.NextFunction
+// ) => {
+//   try {
+
+//   } catch(e) {
+//     next(e);
+//   }
+// });
 
 export default authRouter;
