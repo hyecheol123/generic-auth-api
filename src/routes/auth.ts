@@ -98,4 +98,38 @@ authRouter.post(
   }
 );
 
+// DELETE /logout: Logout from current session
+authRouter.delete(
+  '/logout',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // Verify the refreshToken
+      const refreshToken: AuthToken = req.app.locals.refreshTokenVerify(req);
+      if (refreshToken.type !== 'refresh') {
+        throw new AuthenticationError();
+      }
+      // Check Token in the Database and delete from the database
+      const dbResult = await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE token = ?',
+        [req.cookies['X-REFRESH-TOKEN']]
+      );
+      if (dbResult.affectedRows < 1) {
+        // If token not found in the Databases
+        throw new AuthenticationError();
+      }
+
+      // Clear Cookie & Response
+      res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true});
+      res.clearCookie('X-REFRESH-TOKEN', {httpOnly: true});
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
 export default authRouter;

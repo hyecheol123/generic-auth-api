@@ -1,5 +1,5 @@
 /**
- * Jest unit test for authentication API
+ * Jest unit test for authentication API's login feature
  *
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
@@ -64,7 +64,7 @@ describe('POST /login - Login with username and password', () => {
     expect(tokenPayload.type).toBe('refresh');
     expect(tokenPayload.admin).toBeUndefined();
 
-    // Check Session DB
+    // Check Session DB Table
     const queryResult = await testEnv.dbClient.query(
       "SELECT * FROM session WHERE username = 'user2'"
     );
