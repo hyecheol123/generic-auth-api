@@ -90,6 +90,7 @@ export default class TestEnv {
         case DBTable.SESSION:
           await this.sessionTable();
           break;
+        /* istanbul ignore next */
         default:
           throw new Error('DBTable Not Valid!!');
       }

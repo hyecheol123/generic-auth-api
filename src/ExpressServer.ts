@@ -109,6 +109,7 @@ export default class ExpressServer {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _next: express.NextFunction
       ): void => {
+        /* istanbul ignore next */
         if (!(err instanceof HTTPError)) {
           console.error(err);
           err = new HTTPError(500, 'Server Error');

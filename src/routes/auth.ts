@@ -89,8 +89,40 @@ authRouter.post(
         maxAge: 15 * 60 * 1000,
       };
       res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
-      cookieOption.maxAge = 120 * 60 * 120;
+      cookieOption.maxAge = 120 * 60 * 1000;
       res.cookie('X-REFRESH-TOKEN', refreshToken, cookieOption);
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// DELETE /logout: Logout from current session
+authRouter.delete(
+  '/logout',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // Verify the refreshToken
+      req.app.locals.refreshTokenVerify(req);
+
+      // Check Token in the Database and delete from the database
+      const dbResult = await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE token = ?',
+        [req.cookies['X-REFRESH-TOKEN']]
+      );
+      if (dbResult.affectedRows < 1) {
+        // If token not found in the Databases
+        throw new AuthenticationError();
+      }
+
+      // Clear Cookie & Response
+      res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true});
+      res.clearCookie('X-REFRESH-TOKEN', {httpOnly: true});
       res.status(200).send();
     } catch (e) {
       next(e);

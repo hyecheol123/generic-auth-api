@@ -25,7 +25,7 @@ Supported features(APIs) are listed below.
 
   This API let admin user (or other services) to remove existing user's login credential from the server.
 
-- **Login** (with username and password)  
+- **Login** `POST /login` (with username and password)  
 
   This API let user to signin and retrieve access/refresh tokens from server.  
 
@@ -38,7 +38,7 @@ Supported features(APIs) are listed below.
   **NOTE THAT COOKIE SECURITY OPTIONS ARE NOT SET**  
   - Need to set token and cookie's path, domain, and secured option.
 
-- **Logout**  
+- **Logout** `DELETE /logout`  
 
   This API clears the related Cookies that store access/refresh token 
   and invalidate refresh token by remove it from the database.
