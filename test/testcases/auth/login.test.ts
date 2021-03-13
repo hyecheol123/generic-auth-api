@@ -4,9 +4,9 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import AuthToken from '../../src/datatypes/AuthToken';
-import DBTable from '../datatypes/DBTable';
-import TestEnv from '../TestEnv';
+import AuthToken from '../../../src/datatypes/AuthToken';
+import DBTable from '../../datatypes/DBTable';
+import TestEnv from '../../TestEnv';
 // eslint-disable-next-line node/no-unpublished-import
 import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';

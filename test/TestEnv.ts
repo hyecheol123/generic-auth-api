@@ -62,6 +62,7 @@ export default class TestEnv {
       user: this.testConfig.dbUsername,
       password: this.testConfig.dbPassword,
       database: `db_${this.dbIdentifier}`,
+      multipleStatements: true,
       compress: true,
     });
 
