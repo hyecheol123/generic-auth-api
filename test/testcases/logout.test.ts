@@ -114,4 +114,45 @@ describe('DELETE /logout - Logout from current session', () => {
     expect(response.status).toBe(401);
     done();
   });
+
+  test('Fail - UseRefresh Token generated with wrong key', async done => {
+    // Generate Refersh Token
+    const tokenContent: AuthToken = {username: 'user2', type: 'refresh'};
+    const jwtOption: jwt.SignOptions = {
+      algorithm: 'HS512',
+      expiresIn: '120m',
+    };
+    const refreshToken = jwt.sign(tokenContent, 'wrong-key', jwtOption);
+
+    // Logout Request
+    const response = await request(testEnv.expressServer.app)
+      .delete('/logout')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(401);
+    done();
+  });
+
+  test('Fail - No Token', async done => {
+    // User Login (Retrieve Refresh Token)
+    let response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user1', password: 'password'});
+    expect(response.status).toBe(200);
+    const refreshToken = response.header['set-cookie'][1]
+      .split('; ')[0]
+      .split('=')[1];
+
+    // Logout Request
+    response = await request(testEnv.expressServer.app).delete('/logout');
+    expect(response.status).toBe(401);
+
+    // Check Session DB Table
+    // Still need to be logged in
+    const queryResult = await testEnv.dbClient.query(
+      'SELECT * FROM session WHERE token = ?',
+      [refreshToken]
+    );
+    expect(queryResult.length).toBe(1);
+    done();
+  });
 });
