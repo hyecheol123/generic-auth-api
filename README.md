@@ -45,7 +45,7 @@ Supported features(APIs) are listed below.
 
   Only current session will be signed out; other sessions are still active.
 
-- **Logout from other sessions**
+- **Logout from other sessions** `DELETE /logout/other-sessions`
 
   This API removes refresh tokens that are not associated with the current session from the database.
 
