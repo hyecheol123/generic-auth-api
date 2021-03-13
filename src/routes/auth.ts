@@ -89,7 +89,7 @@ authRouter.post(
         maxAge: 15 * 60 * 1000,
       };
       res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
-      cookieOption.maxAge = 120 * 60 * 120;
+      cookieOption.maxAge = 120 * 60 * 1000;
       res.cookie('X-REFRESH-TOKEN', refreshToken, cookieOption);
       res.status(200).send();
     } catch (e) {
@@ -108,10 +108,8 @@ authRouter.delete(
   ) => {
     try {
       // Verify the refreshToken
-      const refreshToken: AuthToken = req.app.locals.refreshTokenVerify(req);
-      if (refreshToken.type !== 'refresh') {
-        throw new AuthenticationError();
-      }
+      req.app.locals.refreshTokenVerify(req);
+
       // Check Token in the Database and delete from the database
       const dbResult = await req.app.locals.dbClient.query(
         'DELETE FROM session WHERE token = ?',
