@@ -11,6 +11,7 @@ import {
   LoginCredentials,
   validateLoginCredentials,
 } from '../datatypes/LoginCredentials';
+import RefreshTokenVerifyResult from '../datatypes/RefreshTokenVerifyResult';
 import {User} from '../datatypes/User';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
@@ -86,10 +87,10 @@ authRouter.post(
       // Response
       const cookieOption: express.CookieOptions = {
         httpOnly: true,
-        maxAge: 15 * 60 * 1000,
+        maxAge: 15 * 60,
       };
       res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
-      cookieOption.maxAge = 120 * 60 * 1000;
+      cookieOption.maxAge = 120 * 60;
       res.cookie('X-REFRESH-TOKEN', refreshToken, cookieOption);
       res.status(200).send();
     } catch (e) {
@@ -117,8 +118,8 @@ authRouter.delete(
       );
 
       // Clear Cookie & Response
-      res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true});
-      res.clearCookie('X-REFRESH-TOKEN', {httpOnly: true});
+      res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true, maxAge: 0});
+      res.clearCookie('X-REFRESH-TOKEN', {httpOnly: true, maxAge: 0});
       res.status(200).send();
     } catch (e) {
       next(e);
@@ -136,8 +137,8 @@ authRouter.delete(
   ) => {
     try {
       // verify the refresh token
-      const tokenContents = await req.app.locals.refreshTokenVerify(req);
-      const username = (tokenContents as AuthToken).username;
+      const {content} = await req.app.locals.refreshTokenVerify(req);
+      const username = (content as AuthToken).username;
 
       // Logout From other Session (Remove DB)
       await req.app.locals.dbClient.query(
@@ -153,17 +154,84 @@ authRouter.delete(
   }
 );
 
-// // GET /renew: Renew Tokens by using RefreshToken
-// authRouther.get('/renew', async (
-//   req: express.Request,
-//   res: express.Response,
-//   next: express.NextFunction
-// ) => {
-//   try {
+// GET /renew: Renew Tokens by using RefreshToken
+authRouter.get(
+  '/renew',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // Verify the refresh Token
+      // eslint-disable-next-line prettier/prettier
+      const verifyResult: RefreshTokenVerifyResult = await req.app.locals
+        .refreshTokenVerify(req);
 
-//   } catch(e) {
-//     next(e);
-//   }
-// });
+      // Check User Existence
+      const dbResult = await req.app.locals.dbClient.query(
+        'SELECT * FROM user WHERE username = ?',
+        [verifyResult.content.username]
+      );
+      if (dbResult.length !== 1) {
+        // User Not Found
+        throw new AuthenticationError();
+      }
+
+      // Token options
+      const jwtOption: jwt.SignOptions = {
+        algorithm: 'HS512',
+        expiresIn: '120m',
+      };
+      const cookieOption: express.CookieOptions = {
+        httpOnly: true,
+        maxAge: 120 * 60,
+      };
+
+      // Create New Refresh Tokens & Write Cookie
+      if (verifyResult.needRenew) {
+        // Create Refresh Token
+        const tokenExpire = new Date(new Date().getTime() + 120 * 60000);
+        const refreshToken = jwt.sign(
+          verifyResult.content,
+          req.app.get('jwtRefreshKey'),
+          jwtOption
+        );
+
+        // Delete previous session and save new Refresh Token to DB
+        await req.app.locals.dbClient.query(
+          'DELETE DELETE FROM session WHERE token = ?;' +
+            'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
+          [
+            req.cookies['X-REFRESH-TOKEN'],
+            refreshToken,
+            tokenExpire,
+            verifyResult.content.username,
+          ]
+        );
+
+        // Set Cookie
+        res.cookie('X-REFRESH-TOKEN', refreshToken, cookieOption);
+      }
+
+      // Create New Access Tokens & Write Cookie
+      jwtOption.expiresIn = '15m';
+      cookieOption.maxAge = 15 * 60;
+      verifyResult.content.type = 'access';
+      const accessToken = jwt.sign(
+        verifyResult.content,
+        req.app.get('jwtSecretKey'),
+        jwtOption
+      );
+      // Set Cookie
+      res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
+
+      // Response
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 export default authRouter;

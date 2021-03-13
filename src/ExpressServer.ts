@@ -14,6 +14,7 @@ import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
 import authRouter from './routes/auth';
 import Session from './datatypes/Session';
+import RefreshTokenVerifiyResult from './datatypes/RefreshTokenVerifyResult';
 
 /**
  * Class contains Express Application and other relevent instances/functions
@@ -73,7 +74,7 @@ export default class ExpressServer {
     // function to verify refresh token, return username
     this.app.locals.refreshTokenVerify = async (
       req: express.Request
-    ): Promise<AuthToken> => {
+    ): Promise<RefreshTokenVerifiyResult> => {
       if (!('X-REFRESH-TOKEN' in req.cookies)) {
         // No token provided
         throw new AuthenticationError();
@@ -105,7 +106,16 @@ export default class ExpressServer {
       ) {
         throw new AuthenticationError();
       }
-      return tokenContents;
+
+      // If RefreshToken Expires within 20min, need to renew it
+      const expectedExpire = new Date();
+      expectedExpire.setMinutes(new Date().getMinutes() + 20);
+      if (new Date((dbResult[0] as Session).expiresAt) < expectedExpire) {
+        // Less than 20min left
+        return {content: tokenContents, needRenew: true};
+      } else {
+        return {content: tokenContents, needRenew: false};
+      }
     };
 
     // Setup Parsers
