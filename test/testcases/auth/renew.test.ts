@@ -228,4 +228,39 @@ describe('POST /login - Login with username and password', () => {
     expect(queryResult[0].token).toBe(cookie[1]);
     done();
   });
+
+  test('Fail - Expired Refresh Token', async done => {
+    // Set MockDate
+    const currentTime = new Date();
+    // refreshToken Expired - 15min has been passed so far
+    currentTime.setMinutes(new Date().getMinutes() + 110);
+    MockDate.set(currentTime);
+
+    // Renewal Request
+    const response = await request(testEnv.expressServer.app)
+      .get('/renew')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(401);
+
+    // DB Cannot be tested as it has own clock
+    done();
+  });
+
+  // TEST: Already Logged Out Token
+  test('Fail - Expired Refresh Token', async done => {
+    // Logout Request
+    let response = await request(testEnv.expressServer.app)
+      .delete('/logout')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(200);
+
+    // Renewal Request
+    response = await request(testEnv.expressServer.app)
+      .get('/renew')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(401);
+
+    // DB Tested while testing Logout feature
+    done();
+  });
 });
