@@ -36,7 +36,9 @@ Supported features(APIs) are listed below.
   and refresh token is `X-REFRESH-TOKEN`.
 
   **NOTE THAT COOKIE SECURITY OPTIONS ARE NOT SET**  
-  - Need to set token and cookie's path, domain, and secured option.
+  - Need to set token and cookie's path, domain, and secured option.  
+
+  **NOTE THAT ONLY ONE SUCCESS LOGIN PER SECOND**
 
 - **Logout** `DELETE /logout`  
 
@@ -45,7 +47,7 @@ Supported features(APIs) are listed below.
 
   Only current session will be signed out; other sessions are still active.
 
-- **Logout from other sessions**
+- **Logout from other sessions** `DELETE /logout/other-sessions`
 
   This API removes refresh tokens that are not associated with the current session from the database.
 

@@ -23,8 +23,8 @@ export const validateNewUserForm = new ajv().compile({
     username: {type: 'string'},
     password: {type: 'string'},
     admin: {type: 'boolean'},
-    timestamp: {type: 'string', format: 'date-time'},
+    membersince: {type: 'string', format: 'date-time'},
   },
-  required: ['username', 'password', 'timestamp'],
+  required: ['username', 'password', 'membersince'],
   additionalProperties: false,
 });

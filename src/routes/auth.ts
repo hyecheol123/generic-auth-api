@@ -12,6 +12,7 @@ import {
   validateLoginCredentials,
 } from '../datatypes/LoginCredentials';
 import {User} from '../datatypes/User';
+import Session from '../datatypes/Session';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 
@@ -123,6 +124,45 @@ authRouter.delete(
       // Clear Cookie & Response
       res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true});
       res.clearCookie('X-REFRESH-TOKEN', {httpOnly: true});
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// DELETE /logout/other-sessions: Logout from other sessions
+authRouter.delete(
+  '/logout/other-sessions',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // verify the refresh token
+      const username = (req.app.locals.refreshTokenVerify(req) as AuthToken)
+        .username;
+
+      // Check Token in the Database
+      const dbResult = await req.app.locals.dbClient.query(
+        'SELECT * FROM session WHERE token = ?',
+        [req.cookies['X-REFRESH-TOKEN']]
+      );
+      if (
+        dbResult.length !== 1 ||
+        new Date((dbResult[0] as Session).expiresAt) < new Date()
+      ) {
+        throw new AuthenticationError();
+      }
+
+      // Logout From other Session (Remove DB)
+      await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
+        [username, req.cookies['X-REFRESH-TOKEN']]
+      );
+
+      // Response
       res.status(200).send();
     } catch (e) {
       next(e);
