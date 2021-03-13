@@ -179,10 +179,6 @@ authRouter.get(
       }
 
       // Token options
-      const jwtOption: jwt.SignOptions = {
-        algorithm: 'HS512',
-        expiresIn: '120m',
-      };
       const cookieOption: express.CookieOptions = {
         httpOnly: true,
         maxAge: 120 * 60,
@@ -195,12 +191,12 @@ authRouter.get(
         const refreshToken = jwt.sign(
           verifyResult.content,
           req.app.get('jwtRefreshKey'),
-          jwtOption
+          {algorithm: 'HS512', expiresIn: '120m'}
         );
 
         // Delete previous session and save new Refresh Token to DB
         await req.app.locals.dbClient.query(
-          'DELETE DELETE FROM session WHERE token = ?;' +
+          'DELETE FROM session WHERE token = ?;' +
             'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
           [
             req.cookies['X-REFRESH-TOKEN'],
@@ -215,13 +211,12 @@ authRouter.get(
       }
 
       // Create New Access Tokens & Write Cookie
-      jwtOption.expiresIn = '15m';
       cookieOption.maxAge = 15 * 60;
       verifyResult.content.type = 'access';
       const accessToken = jwt.sign(
         verifyResult.content,
-        req.app.get('jwtSecretKey'),
-        jwtOption
+        req.app.get('jwtAccessKey'),
+        {algorithm: 'HS512', expiresIn: '15m'}
       );
       // Set Cookie
       res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);

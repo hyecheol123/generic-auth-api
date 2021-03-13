@@ -15,6 +15,7 @@ import AuthToken from './datatypes/AuthToken';
 import authRouter from './routes/auth';
 import Session from './datatypes/Session';
 import RefreshTokenVerifiyResult from './datatypes/RefreshTokenVerifyResult';
+import JWTObject from './datatypes/JWTObject';
 
 /**
  * Class contains Express Application and other relevent instances/functions
@@ -37,6 +38,7 @@ export default class ExpressServer {
       user: config.dbUsername,
       password: config.dbPassword,
       database: config.defaultDatabase,
+      multipleStatements: true,
       compress: true,
     });
 
@@ -50,26 +52,26 @@ export default class ExpressServer {
     // link functions to verify JWT Tokens
     // function to verify access token, return username
     this.app.locals.accessTokenVerify = (req: express.Request): AuthToken => {
-      if ('X-ACCESS-TOKEN' in req.cookies) {
-        let tokenContents: AuthToken; // place to store contents of JWT
-        // Verify and retrieve the token contents
-        try {
-          tokenContents = jwt.verify(
-            req.cookies['X-ACCESS-TOKEN'],
-            config.jwtSecretKey,
-            {algorithms: ['HS512']}
-          ) as AuthToken;
-        } catch (e) {
-          throw new AuthenticationError();
-        }
-        if (tokenContents.type !== 'access') {
-          throw new AuthenticationError();
-        } else {
-          return tokenContents;
-        }
-      } else {
+      if (!('X-ACCESS-TOKEN' in req.cookies)) {
         throw new AuthenticationError();
       }
+      let tokenContents: AuthToken; // place to store contents of JWT
+      // Verify and retrieve the token contents
+      try {
+        tokenContents = jwt.verify(
+          req.cookies['X-ACCESS-TOKEN'],
+          config.jwtSecretKey,
+          {algorithms: ['HS512']}
+        ) as AuthToken;
+      } catch (e) {
+        throw new AuthenticationError();
+      }
+      if (tokenContents.type !== 'access') {
+        throw new AuthenticationError();
+      }
+      delete (tokenContents as JWTObject).iat;
+      delete (tokenContents as JWTObject).exp;
+      return tokenContents;
     };
     // function to verify refresh token, return username
     this.app.locals.refreshTokenVerify = async (
@@ -110,6 +112,8 @@ export default class ExpressServer {
       // If RefreshToken Expires within 20min, need to renew it
       const expectedExpire = new Date();
       expectedExpire.setMinutes(new Date().getMinutes() + 20);
+      delete (tokenContents as JWTObject).iat;
+      delete (tokenContents as JWTObject).exp;
       if (new Date((dbResult[0] as Session).expiresAt) < expectedExpire) {
         // Less than 20min left
         return {content: tokenContents, needRenew: true};

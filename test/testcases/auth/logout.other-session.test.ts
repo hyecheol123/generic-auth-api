@@ -4,8 +4,8 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import DBTable from '../datatypes/DBTable';
-import TestEnv from '../TestEnv';
+import DBTable from '../../datatypes/DBTable';
+import TestEnv from '../../TestEnv';
 // eslint-disable-next-line node/no-unpublished-import
 import MockDate from 'mockdate';
 // eslint-disable-next-line node/no-unpublished-import
