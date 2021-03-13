@@ -12,6 +12,7 @@ import ServerConfig from './ServerConfig';
 import AuthenticationError from './exceptions/AuthenticationError';
 import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
+import adminRouter from './routes/admin';
 import authRouter from './routes/auth';
 import Session from './datatypes/Session';
 import RefreshTokenVerifiyResult from './datatypes/RefreshTokenVerifyResult';
@@ -128,6 +129,7 @@ export default class ExpressServer {
 
     // Add List of Routers
     this.app.use('/', authRouter);
+    this.app.use('/admin', adminRouter);
 
     // Default Error Handler
     this.app.use(

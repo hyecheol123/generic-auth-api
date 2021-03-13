@@ -13,7 +13,7 @@ The detailed features are listed below.
 
 Supported features(APIs) are listed below.
 
-- **Add Users**  
+- **Add Users** `POST /admin/user`  
   
   This API let admin user (or other services) to add other user's login credential to the server.
 
