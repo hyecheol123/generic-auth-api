@@ -6,8 +6,8 @@
 
 import DBTable from '../../datatypes/DBTable';
 import TestEnv from '../../TestEnv';
-import {User} from '../../../src/datatypes/User';
 import AuthToken from '../../../src/datatypes/AuthToken';
+import {User} from '../../../src/datatypes/User';
 // eslint-disable-next-line node/no-unpublished-import
 import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';
@@ -195,6 +195,135 @@ describe('POST /admin/user - Admin Feature: Add New User', () => {
       "SELECT * FROM user WHERE username = 'admin2'"
     );
     expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Fail - Non-Admin User', async done => {
+    // Login with non-admin user
+    let response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user2', password: 'password12!'});
+    expect(response.status).toBe(200);
+    accessToken = response.header['set-cookie'][0].split('; ')[0].split('=')[1];
+    refreshToken = response.header['set-cookie'][1]
+      .split('; ')[0]
+      .split('=')[1];
+
+    // Request
+    response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send(newUser);
+    expect(response.status).toBe(401);
+
+    // DB Check
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'admin2'"
+    );
+    expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Bad Request 1', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send({
+        username: 'admin2',
+        password: 'newpw',
+        admin: true,
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Bad Request');
+
+    // DB Check
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'admin2'"
+    );
+    expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Bad Request 2', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send({
+        password: 'newpw',
+        membersince: memberSince.toISOString(),
+        admin: true,
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Bad Request');
+    done();
+  });
+
+  test('Bad Request 3', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send({
+        username: 'admin2',
+        membersince: memberSince.toISOString(),
+        admin: true,
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Bad Request');
+
+    // DB Check
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'admin2'"
+    );
+    expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Bad Request 4', async done => {
+    const response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send({
+        username: 'admin2',
+        password: 'newpw',
+        membersince: memberSince.toISOString(),
+        admin: true,
+        additional: 'dummy',
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Bad Request');
+
+    // DB Check
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'admin2'"
+    );
+    expect(queryResult.length).toBe(0);
+    done();
+  });
+
+  test('Fail - Duplicated username', async done => {
+    // Request
+    newUser.username = 'admin';
+    const response = await request(testEnv.expressServer.app)
+      .post('/admin/user')
+      .set('Cookie', [`X-ACCESS-TOKEN=${accessToken}`])
+      .send(newUser);
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Duplicated Username');
+
+    // DB Check
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'admin'"
+    );
+    expect(queryResult.length).toBe(1);
+    expect(new Date(queryResult[0].membersince).toISOString()).not.toBe(
+      memberSince.toISOString()
+    );
+    const hashedPassword = testEnv.testConfig.hash(
+      newUser.username,
+      memberSince.toISOString(),
+      newUser.password
+    );
+    expect(queryResult[0].password).not.toBe(hashedPassword);
     done();
   });
 });

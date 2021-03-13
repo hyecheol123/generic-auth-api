@@ -54,7 +54,8 @@ adminRouter.post(
           [newUser.username, hashedPassword, newUser.membersince, newUser.admin]
         );
       } catch (e) {
-        if (e.code === 'DR_DUP_ENTRY') {
+        /* istanbul ignore else */
+        if (e.code === 'ER_DUP_ENTRY') {
           // Only handles duplicated key error
           throw new HTTPError(400, 'Duplicated Username');
         } else {
