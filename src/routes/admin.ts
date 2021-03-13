@@ -40,7 +40,7 @@ adminRouter.post(
       // Hash Password
       const hashedPassword = req.app.locals.hash(
         newUser.username,
-        newUser.membersince,
+        newUser.membersince.toISOString(),
         newUser.password
       );
       if (newUser.admin !== true) {

@@ -115,7 +115,7 @@ describe('DELETE /logout - Logout from current session', () => {
     done();
   });
 
-  test('Fail - UseRefresh Token generated with wrong key', async done => {
+  test('Fail - Use Refresh Token generated with wrong key', async done => {
     // Generate Refersh Token
     const tokenContent: AuthToken = {username: 'user2', type: 'refresh'};
     const jwtOption: jwt.SignOptions = {
