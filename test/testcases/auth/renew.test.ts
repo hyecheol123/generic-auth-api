@@ -246,7 +246,6 @@ describe('POST /login - Login with username and password', () => {
     done();
   });
 
-  // TEST: Already Logged Out Token
   test('Fail - Expired Refresh Token', async done => {
     // Logout Request
     let response = await request(testEnv.expressServer.app)
@@ -261,6 +260,18 @@ describe('POST /login - Login with username and password', () => {
     expect(response.status).toBe(401);
 
     // DB Tested while testing Logout feature
+    done();
+  });
+
+  test('Fail - Delete Non Existing User', async done => {
+    // Delete User
+    await testEnv.dbClient.query("DELETE FROM user WHERE username = 'user2'");
+
+    // Renewal Request
+    const response = await request(testEnv.expressServer.app)
+      .get('/renew')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(401);
     done();
   });
 });
