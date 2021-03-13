@@ -12,7 +12,7 @@ import {LoginCredentials} from './LoginCredentials';
  * Interface for NewUser
  */
 export interface User extends LoginCredentials {
-  membersince: string; // in ISO Date format
+  membersince: string | Date; // in ISO Date format
   admin?: boolean;
 }
 
