@@ -10,6 +10,7 @@ import {User, validateNewUserForm} from '../datatypes/User';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 import HTTPError from '../exceptions/HTTPError';
+import NotFoundError from '../exceptions/NotFoundError';
 
 const adminRouter = express.Router();
 
@@ -65,6 +66,45 @@ adminRouter.post(
 
       // Response
       res.status(201).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+adminRouter.delete(
+  '/user/:username',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // Verify admin's access token
+      const content: AuthToken = await req.app.locals.accessTokenVerify(req);
+      if (content.admin !== true) {
+        throw new AuthenticationError();
+      }
+      const delTarget = req.params.username; // username that will be deleted
+
+      // Delete From Database
+      const queryResult = await req.app.locals.dbClient.query(
+        'DELETE FROM user WHERE username = ?',
+        [delTarget]
+      );
+      if (queryResult.affectedRows !== 1) {
+        // When user not found
+        throw new NotFoundError();
+      }
+
+      // Delete Sessions
+      await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE username = ?',
+        [delTarget]
+      );
+
+      // response
+      res.status(200).send();
     } catch (e) {
       next(e);
     }

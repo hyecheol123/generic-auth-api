@@ -21,9 +21,12 @@ Supported features(APIs) are listed below.
   Passwords are secured by cryptographic hash function.
   This let the others except for the user, including server admin, not to look up the password.
 
-- **Remove Users**
+- **Remove Users** `DELETE /admin/user/{username}`  
 
-  This API let admin user (or other services) to remove existing user's login credential from the server.
+  This API let admin user (or other services) to remove existing user's login credential from the server.  
+
+  Cannot delete admin account that currently running this API.
+  Will also logout from all sessions associated with the account.
 
 - **Login** `POST /login` (with username and password)  
 
