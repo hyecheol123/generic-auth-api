@@ -11,23 +11,6 @@ The detailed features are listed below.
 
 ## Supported APIs
 
-Supported features(APIs) are listed below.
-
-- **Add Users** `POST /admin/user`  
-  
-  This API let admin user (or other services) to add other user's login credential to the server.
-
-  Username and password are stored in the database.
-  Passwords are secured by cryptographic hash function.
-  This let the others except for the user, including server admin, not to look up the password.
-
-- **Remove Users** `DELETE /admin/user/{username}`  
-
-  This API let admin user (or other services) to remove existing user's login credential from the server.  
-
-  Cannot delete admin account that currently running this API.
-  Will also logout from all sessions associated with the account.
-
 - **Login** `POST /login` (with username and password)  
 
   This API let user to signin and retrieve access/refresh tokens from server.  
@@ -54,12 +37,43 @@ Supported features(APIs) are listed below.
 
   This API removes refresh tokens that are not associated with the current session from the database.
 
+- **Change Password**
+  
+  This API let users to change their password.
+  It requires user's current password.
+
 - **Renew Tokens** `GET /renew`
   
   This API creates new access token based on the information of the provided refresh token.
   The new access token will replace the old access token.
 
   Before generating new access token, the server will check whether the refresh token exists in the database.
+
+
+## Supported Admin APIs
+
+Supported features(APIs) are listed below.
+
+- **Add Users** `POST /admin/user`  
+  
+  This API let admin user (or other services) to add other user's login credential to the server.
+
+  Username and password are stored in the database.
+  Passwords are secured by cryptographic hash function.
+  This let the others except for the user, including server admin, not to look up the password.
+
+- **Remove Users** `DELETE /admin/user/{username}`  
+
+  This API let admin user (or other services) to remove existing user's login credential from the server.  
+
+  Cannot delete admin account that currently running this API.
+  Will also logout from all sessions associated with the account.
+
+- **Reset Password**
+  
+  This API let admin to reset user's password without user's current password.
+
+  This can be used to send user a temporal password.
 
 
 ## Scripts
