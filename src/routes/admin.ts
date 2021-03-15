@@ -6,6 +6,7 @@
 
 import * as express from 'express';
 import AuthToken from '../datatypes/AuthToken';
+import {validateNewPassword} from '../datatypes/NewPassword';
 import {User, validateNewUserForm} from '../datatypes/User';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
@@ -104,6 +105,59 @@ adminRouter.delete(
       );
 
       // response
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+adminRouter.put(
+  '/user/:username/password',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // Verify Admin's Access Token
+      const content: AuthToken = await req.app.locals.accessTokenVerify(req);
+      if (content.admin !== true) {
+        throw new AuthenticationError();
+      }
+
+      // Verify User's Input
+      const editTarget = req.params.username;
+      if (!validateNewPassword(req.body)) {
+        throw new BadRequestError();
+      }
+      const newPassword: string = req.body.newPassword;
+
+      // Retrieve User Information from DB
+      let queryResult = await req.app.locals.dbClient.query(
+        'SELECT * FROM user WHERE username = ?',
+        [editTarget]
+      );
+      if (queryResult.length !== 1) {
+        throw new NotFoundError();
+      }
+      const user: User = queryResult[0];
+
+      // Hash Password
+      const hashedPassword = req.app.locals.hash(
+        user.username,
+        new Date(user.membersince).toISOString(),
+        newPassword
+      );
+
+      // Write to DB + Logout From all currently signed in session
+      queryResult = await req.app.locals.dbClient.query(
+        'UPDATE user SET password = ? WHERE username = ?; ' +
+          'DELETE FROM session WHERE username = ?',
+        [hashedPassword, user.username, user.username]
+      );
+
+      // Response
       res.status(200).send();
     } catch (e) {
       next(e);
