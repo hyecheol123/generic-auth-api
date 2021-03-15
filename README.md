@@ -69,7 +69,7 @@ Supported features(APIs) are listed below.
   Cannot delete admin account that currently running this API.
   Will also logout from all sessions associated with the account.
 
-- **Reset Password**
+- **Reset Password** `PUT /admin/user/{username}/password`
   
   This API let admin to reset user's password without user's current password.
 
