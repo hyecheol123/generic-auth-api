@@ -73,6 +73,7 @@ adminRouter.post(
   }
 );
 
+// DELETE /admin/user/{username}: Delete an existing user
 adminRouter.delete(
   '/user/:username',
   async (
@@ -112,6 +113,7 @@ adminRouter.delete(
   }
 );
 
+// PUT /user/{username}/password: Change User's password
 adminRouter.put(
   '/user/:username/password',
   async (

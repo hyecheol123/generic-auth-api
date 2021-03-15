@@ -37,10 +37,10 @@ The detailed features are listed below.
 
   This API removes refresh tokens that are not associated with the current session from the database.
 
-- **Change Password**
+- **Change Password** `PUT /password`
   
   This API let users to change their password.
-  It requires user's current password.
+  It requires user's current password and new password.
 
 - **Renew Tokens** `GET /renew`
   
