@@ -19,9 +19,9 @@ export interface ChangePassword {
 export const validateChangePassword = new ajv().compile({
   type: 'object',
   properties: {
-    changePassword: {type: 'string'},
+    currentPassword: {type: 'string'},
     newPassword: {type: 'string'},
   },
-  required: ['changePassword', 'newPassword'],
+  required: ['currentPassword', 'newPassword'],
   additionalProperties: false,
 });
