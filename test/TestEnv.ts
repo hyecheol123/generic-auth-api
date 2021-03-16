@@ -40,21 +40,6 @@ export default class TestEnv {
     // Generate TestConfig obj
     this.testConfig = new TestConfig(this.dbIdentifier);
 
-    // Create test database
-    mariadb
-      .createConnection({
-        host: this.testConfig.dbURL,
-        port: this.testConfig.dbPort,
-        user: this.testConfig.dbUsername,
-        password: this.testConfig.dbPassword,
-        compress: true,
-      })
-      .then(conn => {
-        conn.query(`CREATE DATABASE db_${this.dbIdentifier};`).then(() => {
-          conn.end();
-        });
-      });
-
     // Setup DB Connection Pool
     this.dbClient = mariadb.createPool({
       host: this.testConfig.dbURL,
@@ -81,6 +66,17 @@ export default class TestEnv {
   async start(dbTableList: DBTable[]): Promise<void> {
     // Remove duplicates in the dbTableList
     dbTableList = Array.from(new Set(dbTableList));
+
+    // Create test database
+    const dbConnection = await mariadb.createConnection({
+      host: this.testConfig.dbURL,
+      port: this.testConfig.dbPort,
+      user: this.testConfig.dbUsername,
+      password: this.testConfig.dbPassword,
+      compress: true,
+    });
+    await dbConnection.query(`CREATE DATABASE db_${this.dbIdentifier};`);
+    await dbConnection.end();
 
     // Put the Data to the Database
     for (const i of dbTableList) {

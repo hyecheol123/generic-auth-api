@@ -8,6 +8,10 @@ import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
 import AuthToken from '../datatypes/AuthToken';
 import {
+  ChangePassword,
+  validateChangePassword,
+} from '../datatypes/ChangePassword';
+import {
   LoginCredentials,
   validateLoginCredentials,
 } from '../datatypes/LoginCredentials';
@@ -220,6 +224,64 @@ authRouter.get(
       );
       // Set Cookie
       res.cookie('X-ACCESS-TOKEN', accessToken, cookieOption);
+
+      // Response
+      res.status(200).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// PUT /password: Change Password
+authRouter.put(
+  '/password',
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      // verify the refresh token
+      const {content} = await req.app.locals.refreshTokenVerify(req);
+      const username = (content as AuthToken).username;
+
+      // Verify User's Input
+      const changePassword: ChangePassword = req.body;
+      if (!validateChangePassword(changePassword)) {
+        throw new BadRequestError();
+      }
+
+      // Retrieve User information from DB
+      const queryResult = await req.app.locals.dbClient.query(
+        'SELECT * FROM user WHERE username = ?',
+        [username]
+      );
+      const user: User = queryResult[0];
+
+      // Check current password
+      let hashedPassword = req.app.locals.hash(
+        user.username,
+        new Date(user.membersince).toISOString(),
+        changePassword.currentPassword
+      );
+      if (hashedPassword !== user.password) {
+        throw new AuthenticationError();
+      }
+
+      // Generate new hashed password
+      hashedPassword = req.app.locals.hash(
+        user.username,
+        new Date(user.membersince).toISOString(),
+        changePassword.newPassword
+      );
+
+      // Update DB & Logout from other sessions
+      await req.app.locals.dbClient.query(
+        'UPDATE user SET password = ? WHERE username = ?; ' +
+          'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
+        [hashedPassword, username, username, req.cookies['X-REFRESH-TOKEN']]
+      );
 
       // Response
       res.status(200).send();
