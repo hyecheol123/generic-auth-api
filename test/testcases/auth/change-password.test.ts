@@ -158,4 +158,118 @@ describe('DELETE /logout/other-sessions - Logout from other sessions', () => {
     expect(response.status).toBe(200);
     done();
   });
+
+  test('Fail - Invalid Token', async done => {
+    // Password change request
+    const response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}abcd`])
+      .send({currentPassword: 'password12!', newPassword: 'newpw123'});
+    expect(response.status).toBe(401);
+
+    // DB Check - User: Password Not Changed
+    let queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(1);
+    const hashedPassword = testEnv.testConfig.hash(
+      'user2',
+      new Date(queryResult[0].membersince).toISOString(),
+      'password12!'
+    );
+    expect(queryResult[0].password).toBe(hashedPassword);
+
+    // DB Check - Session: Other Session Not Cleared
+    queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM session WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(3);
+    done();
+  });
+
+  test('Fail - Bad Request', async done => {
+    // Password change request with missing field
+    let response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`])
+      .send({currentPassword: 'password12!'});
+    expect(response.status).toBe(400);
+    response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`])
+      .send({newPassword: 'password12!'});
+    expect(response.status).toBe(400);
+
+    // Password change request with wrong field name
+    response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`])
+      .send({currentPasswordAdd: 'password12!', newPassword: 'newpw123'});
+    expect(response.status).toBe(400);
+
+    // Password change request with additional Field
+    response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`])
+      .send({
+        currentPassword: 'password12!',
+        newPassword: 'newpw123',
+        id: 'user2',
+      });
+    expect(response.status).toBe(400);
+
+    // Password change request without body
+    response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`]);
+    expect(response.status).toBe(400);
+
+    // DB Check - User: Password Not Changed
+    let queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(1);
+    const hashedPassword = testEnv.testConfig.hash(
+      'user2',
+      new Date(queryResult[0].membersince).toISOString(),
+      'password12!'
+    );
+    expect(queryResult[0].password).toBe(hashedPassword);
+
+    // DB Check - Session: Other Session Not Cleared
+    queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM session WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(3);
+    done();
+  });
+
+  // TEST: Not Matching Current PW
+  test('Fail - Not Matching Current PW', async done => {
+    // Password change request
+    const response = await request(testEnv.expressServer.app)
+      .put('/password')
+      .set('Cookie', [`X-REFRESH-TOKEN=${refreshToken}`])
+      .send({currentPassword: 'wrongPW', newPassword: 'newpw123'});
+    expect(response.status).toBe(401);
+
+    // DB Check - User: Password Not Changed
+    let queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM user WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(1);
+    const hashedPassword = testEnv.testConfig.hash(
+      'user2',
+      new Date(queryResult[0].membersince).toISOString(),
+      'password12!'
+    );
+    expect(queryResult[0].password).toBe(hashedPassword);
+
+    // DB Check - Session: Other Session Not Cleared
+    queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM session WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(3);
+    done();
+  });
 });
