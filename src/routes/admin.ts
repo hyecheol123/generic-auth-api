@@ -153,14 +153,15 @@ adminRouter.put(
       );
 
       // Write to DB + Logout From all currently signed in session
-      await req.app.locals.dbClient.query(
+      const query1 = req.app.locals.dbClient.query(
         'UPDATE user SET password = ? WHERE username = ?;',
         [hashedPassword, user.username]
       );
-      await req.app.locals.dbClient.query(
+      const query2 = req.app.locals.dbClient.query(
         'DELETE FROM session WHERE username = ?',
         [user.username]
       );
+      await Promise.all([query1, query2]);
 
       // Response
       res.status(200).send();
