@@ -200,14 +200,12 @@ authRouter.get(
 
         // Delete previous session and save new Refresh Token to DB
         await req.app.locals.dbClient.query(
-          'DELETE FROM session WHERE token = ?;' +
-            'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
-          [
-            req.cookies['X-REFRESH-TOKEN'],
-            refreshToken,
-            tokenExpire,
-            verifyResult.content.username,
-          ]
+          'DELETE FROM session WHERE token = ?;',
+          [req.cookies['X-REFRESH-TOKEN']]
+        );
+        await req.app.locals.dbClient.query(
+          'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
+          [refreshToken, tokenExpire, verifyResult.content.username]
         );
 
         // Set Cookie
@@ -278,9 +276,12 @@ authRouter.put(
 
       // Update DB & Logout from other sessions
       await req.app.locals.dbClient.query(
-        'UPDATE user SET password = ? WHERE username = ?; ' +
-          'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
-        [hashedPassword, username, username, req.cookies['X-REFRESH-TOKEN']]
+        'UPDATE user SET password = ? WHERE username = ?;',
+        [hashedPassword, username]
+      );
+      await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
+        [username, req.cookies['X-REFRESH-TOKEN']]
       );
 
       // Response

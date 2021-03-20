@@ -47,7 +47,6 @@ export default class TestEnv {
       user: this.testConfig.dbUsername,
       password: this.testConfig.dbPassword,
       database: `db_${this.dbIdentifier}`,
-      multipleStatements: true,
       compress: true,
     });
 
@@ -79,19 +78,23 @@ export default class TestEnv {
     await dbConnection.end();
 
     // Put the Data to the Database
+    const dbActions = [];
     for (const i of dbTableList) {
       switch (i) {
         case DBTable.USER:
-          await this.userTable();
+          dbActions.push(this.userTable());
           break;
         case DBTable.SESSION:
-          await this.sessionTable();
+          dbActions.push(this.sessionTable());
           break;
         /* istanbul ignore next */
         default:
           throw new Error('DBTable Not Valid!!');
       }
     }
+
+    // Wait for DB Operations
+    await Promise.all(dbActions);
   }
 
   /**

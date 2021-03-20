@@ -113,7 +113,7 @@ adminRouter.delete(
   }
 );
 
-// PUT /user/{username}/password: Change User's password
+// PUT /user/{username}/password: Reset User's password
 adminRouter.put(
   '/user/:username/password',
   async (
@@ -154,9 +154,12 @@ adminRouter.put(
 
       // Write to DB + Logout From all currently signed in session
       await req.app.locals.dbClient.query(
-        'UPDATE user SET password = ? WHERE username = ?; ' +
-          'DELETE FROM session WHERE username = ?',
-        [hashedPassword, user.username, user.username]
+        'UPDATE user SET password = ? WHERE username = ?;',
+        [hashedPassword, user.username]
+      );
+      await req.app.locals.dbClient.query(
+        'DELETE FROM session WHERE username = ?',
+        [user.username]
       );
 
       // Response

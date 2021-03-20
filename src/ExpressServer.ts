@@ -39,7 +39,6 @@ export default class ExpressServer {
       user: config.dbUsername,
       password: config.dbPassword,
       database: config.defaultDatabase,
-      multipleStatements: true,
       compress: true,
     });
 
