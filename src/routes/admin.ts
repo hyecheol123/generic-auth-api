@@ -25,7 +25,7 @@ adminRouter.post(
   ) => {
     try {
       // Verify admin's access token
-      const content: AuthToken = await req.app.locals.accessTokenVerify(req);
+      const content: AuthToken = req.app.locals.accessTokenVerify(req);
       if (content.admin !== true) {
         throw new AuthenticationError();
       }
@@ -83,7 +83,7 @@ adminRouter.delete(
   ) => {
     try {
       // Verify admin's access token
-      const content: AuthToken = await req.app.locals.accessTokenVerify(req);
+      const content: AuthToken = req.app.locals.accessTokenVerify(req);
       if (content.admin !== true) {
         throw new AuthenticationError();
       }
@@ -123,7 +123,7 @@ adminRouter.put(
   ) => {
     try {
       // Verify Admin's Access Token
-      const content: AuthToken = await req.app.locals.accessTokenVerify(req);
+      const content: AuthToken = req.app.locals.accessTokenVerify(req);
       if (content.admin !== true) {
         throw new AuthenticationError();
       }
@@ -136,7 +136,7 @@ adminRouter.put(
       const newPassword: string = req.body.newPassword;
 
       // Retrieve User Information from DB
-      let queryResult = await req.app.locals.dbClient.query(
+      const queryResult = await req.app.locals.dbClient.query(
         'SELECT * FROM user WHERE username = ?',
         [editTarget]
       );
@@ -153,7 +153,7 @@ adminRouter.put(
       );
 
       // Write to DB + Logout From all currently signed in session
-      queryResult = await req.app.locals.dbClient.query(
+      await req.app.locals.dbClient.query(
         'UPDATE user SET password = ? WHERE username = ?; ' +
           'DELETE FROM session WHERE username = ?',
         [hashedPassword, user.username, user.username]
