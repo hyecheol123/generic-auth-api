@@ -5,7 +5,8 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import * as mariadb from 'mariadb';
 import {LoginCredentials} from './LoginCredentials';
 import HTTPError from '../exceptions/HTTPError';
@@ -28,7 +29,7 @@ export default class User implements LoginCredentials {
   }
 
   // Validator for JSON object containing information of NewUserForm
-  static validateNewUserForm = new Ajv().compile({
+  static validateNewUserForm = addFormats(new Ajv()).compile({
     type: 'object',
     properties: {
       username: {type: 'string'},

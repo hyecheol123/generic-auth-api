@@ -6,7 +6,7 @@
 
 import * as express from 'express';
 import AuthToken from '../datatypes/AuthToken';
-import {validateNewPassword} from '../datatypes/NewPassword';
+import {NewPassword, validateNewPassword} from '../datatypes/NewPassword';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 import User from '../datatypes/User';
@@ -30,27 +30,28 @@ adminRouter.post(
       }
 
       // Verify admin's input
-      if (!User.validateNewUserForm(req.body)) {
+      const input: User = req.body;
+      if (!User.validateNewUserForm(input)) {
         throw new BadRequestError();
       }
 
       // Create newUser
-      const membersince = new Date(req.body.membersince);
+      const membersince = new Date(input.membersince);
       membersince.setMilliseconds(0);
       // Hash Password
       const hashedPassword = req.app.locals.hash(
-        req.body.username,
+        input.username,
         membersince.toISOString(),
-        req.body.password
+        input.password
       );
-      if (req.body.admin !== true) {
-        req.body.admin = false;
+      if (input.admin !== true) {
+        input.admin = false;
       }
       const newUser = new User(
         membersince,
         hashedPassword,
-        req.body.username,
-        req.body.admin
+        input.username,
+        input.admin
       );
 
       // Write to DB
@@ -112,10 +113,11 @@ adminRouter.put(
 
       // Verify User's Input
       const editTarget = req.params.username;
-      if (!validateNewPassword(req.body)) {
+      const input: NewPassword = req.body;
+      if (!validateNewPassword(input)) {
         throw new BadRequestError();
       }
-      const newPassword: string = req.body.newPassword;
+      const newPassword: string = input.newPassword;
 
       // Retrieve User Information from DB
       const user = await User.read(req.app.locals.dbClient, editTarget);
