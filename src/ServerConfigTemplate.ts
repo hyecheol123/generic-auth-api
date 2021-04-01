@@ -33,7 +33,7 @@ export default abstract class ServerConfigTemplate {
    *
    * @param config configuration parameters will given by an object
    */
-  constructor(config: ConfigObj) {
+  protected constructor(config: ConfigObj) {
     // Setup DB Connection
     this.dbURL = config.db.dbURL;
     this.dbPort = config.db.dbPort;

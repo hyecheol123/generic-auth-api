@@ -15,11 +15,11 @@ import AuthToken from './datatypes/AuthToken';
 import adminRouter from './routes/admin';
 import authRouter from './routes/auth';
 import Session from './datatypes/Session';
-import RefreshTokenVerifiyResult from './datatypes/RefreshTokenVerifyResult';
+import RefreshTokenVerifyResult from './datatypes/RefreshTokenVerifyResult';
 import JWTObject from './datatypes/JWTObject';
 
 /**
- * Class contains Express Application and other relevent instances/functions
+ * Class contains Express Application and other relevant instances/functions
  */
 export default class ExpressServer {
   app: express.Application;
@@ -76,7 +76,7 @@ export default class ExpressServer {
     // function to verify refresh token, return username
     this.app.locals.refreshTokenVerify = async (
       req: express.Request
-    ): Promise<RefreshTokenVerifiyResult> => {
+    ): Promise<RefreshTokenVerifyResult> => {
       if (!('X-REFRESH-TOKEN' in req.cookies)) {
         // No token provided
         throw new AuthenticationError();
@@ -98,14 +98,11 @@ export default class ExpressServer {
       }
 
       // Check Token in the Database
-      const dbResult = await this.app.locals.dbClient.query(
-        'SELECT * FROM session WHERE token = ?',
-        [req.cookies['X-REFRESH-TOKEN']]
+      const dbResult = await Session.read(
+        this.app.locals.dbClient,
+        req.cookies['X-REFRESH-TOKEN']
       );
-      if (
-        dbResult.length !== 1 ||
-        new Date((dbResult[0] as Session).expiresAt) < new Date()
-      ) {
+      if (dbResult.length !== 1 || dbResult[0].expiresAt < new Date()) {
         throw new AuthenticationError();
       }
 
@@ -114,7 +111,7 @@ export default class ExpressServer {
       expectedExpire.setMinutes(new Date().getMinutes() + 20);
       delete (tokenContents as JWTObject).iat;
       delete (tokenContents as JWTObject).exp;
-      if (new Date((dbResult[0] as Session).expiresAt) < expectedExpire) {
+      if (dbResult[0].expiresAt < expectedExpire) {
         // Less than 20min left
         return {content: tokenContents, needRenew: true};
       } else {

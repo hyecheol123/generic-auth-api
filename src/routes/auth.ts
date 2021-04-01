@@ -16,7 +16,8 @@ import {
   validateLoginCredentials,
 } from '../datatypes/LoginCredentials';
 import RefreshTokenVerifyResult from '../datatypes/RefreshTokenVerifyResult';
-import {User} from '../datatypes/User';
+import User from '../datatypes/User';
+import Session from '../datatypes/Session';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 
@@ -38,20 +39,25 @@ authRouter.post(
       }
 
       // Retrieve user information from database
-      const queryResult = await req.app.locals.dbClient.query(
-        'SELECT * FROM user WHERE username = ?',
-        [loginCredential.username]
-      );
-      if (queryResult.length < 1) {
-        // No user found
-        throw new AuthenticationError();
+      let user;
+      try {
+        user = await User.read(
+          req.app.locals.dbClient,
+          loginCredential.username
+        );
+      } catch (e) {
+        /* istanbul ignore else */
+        if (e.statusCode === 404) {
+          throw new AuthenticationError();
+        } else {
+          throw e;
+        }
       }
-      const user: User = queryResult[0];
 
       // Check Password
       const hashedPassword = req.app.locals.hash(
         user.username,
-        new Date(user.membersince).toISOString(),
+        (user.membersince as Date).toISOString(),
         loginCredential.password
       );
       if (hashedPassword !== user.password) {
@@ -83,10 +89,12 @@ authRouter.post(
       );
 
       // Save Refresh Token to DB
-      await req.app.locals.dbClient.query(
-        'INSERT INTO session (token, expiresAt, username) values (?, ?, ?)',
-        [refreshToken, refreshTokenExpires, user.username]
+      const sessionInfo = new Session(
+        refreshToken,
+        refreshTokenExpires,
+        user.username
       );
+      await Session.create(req.app.locals.dbClient, sessionInfo);
 
       // Response
       const cookieOption: express.CookieOptions = {
@@ -112,16 +120,12 @@ authRouter.delete(
     next: express.NextFunction
   ) => {
     try {
-      // Verify the refreshToken
-      const refreshTokenVerify = req.app.locals.refreshTokenVerify(req);
-
-      // Delete from the database
-      const query = req.app.locals.dbClient.query(
-        'DELETE FROM session WHERE token = ?',
-        [req.cookies['X-REFRESH-TOKEN']]
-      );
-
-      await Promise.all([refreshTokenVerify, query]);
+      await Promise.all([
+        // Verify the refreshToken
+        req.app.locals.refreshTokenVerify(req),
+        // Delete from the database
+        Session.delete(req.app.locals.dbClient, req.cookies['X-REFRESH-TOKEN']),
+      ]);
 
       // Clear Cookie & Response
       res.clearCookie('X-ACCESS-TOKEN', {httpOnly: true, maxAge: 0});
@@ -147,9 +151,10 @@ authRouter.delete(
       const username = (content as AuthToken).username;
 
       // Logout From other Session (Remove DB)
-      await req.app.locals.dbClient.query(
-        'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
-        [username, req.cookies['X-REFRESH-TOKEN']]
+      await Session.deleteNotCurrent(
+        req.app.locals.dbClient,
+        req.cookies['X-REFRESH-TOKEN'],
+        username
       );
 
       // Response
@@ -175,13 +180,15 @@ authRouter.get(
         .refreshTokenVerify(req);
 
       // Check User Existence
-      const dbResult = await req.app.locals.dbClient.query(
-        'SELECT * FROM user WHERE username = ?',
-        [verifyResult.content.username]
-      );
-      if (dbResult.length !== 1) {
-        // User Not Found
-        throw new AuthenticationError();
+      try {
+        await User.read(req.app.locals.dbClient, verifyResult.content.username);
+      } catch (e) {
+        /* istanbul ignore else */
+        if (e.statusCode === 404) {
+          throw new AuthenticationError();
+        } else {
+          throw e;
+        }
       }
 
       // Token options
@@ -202,14 +209,16 @@ authRouter.get(
         );
 
         // Delete previous session and save new Refresh Token to DB
-        const query1 = req.app.locals.dbClient.query(
-          'DELETE FROM session WHERE token = ?;',
-          [req.cookies['X-REFRESH-TOKEN']]
+        const sessionInfo = new Session(
+          refreshToken,
+          tokenExpire,
+          verifyResult.content.username
         );
-        const query2 = req.app.locals.dbClient.query(
-          'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
-          [refreshToken, tokenExpire, verifyResult.content.username]
+        const query1 = Session.delete(
+          req.app.locals.dbClient,
+          req.cookies['X-REFRESH-TOKEN']
         );
+        const query2 = Session.create(req.app.locals.dbClient, sessionInfo);
         queries.push(query1);
         queries.push(query2);
 
@@ -261,11 +270,7 @@ authRouter.put(
       }
 
       // Retrieve User information from DB
-      const queryResult = await req.app.locals.dbClient.query(
-        'SELECT * FROM user WHERE username = ?',
-        [username]
-      );
-      const user: User = queryResult[0];
+      const user = await User.read(req.app.locals.dbClient, username);
 
       // Check current password
       let hashedPassword = req.app.locals.hash(
@@ -285,15 +290,14 @@ authRouter.put(
       );
 
       // Update DB & Logout from other sessions
-      const query1 = req.app.locals.dbClient.query(
-        'UPDATE user SET password = ? WHERE username = ?;',
-        [hashedPassword, username]
-      );
-      const query2 = req.app.locals.dbClient.query(
-        'DELETE FROM session WHERE username = ? AND (NOT token = ?)',
-        [username, req.cookies['X-REFRESH-TOKEN']]
-      );
-      await Promise.all([query1, query2]);
+      await Promise.all([
+        User.updatePassword(req.app.locals.dbClient, username, hashedPassword),
+        Session.deleteNotCurrent(
+          req.app.locals.dbClient,
+          req.cookies['X-REFRESH-TOKEN'],
+          username
+        ),
+      ]);
 
       // Response
       res.status(200).send();

@@ -10,7 +10,7 @@ import AuthToken from './AuthToken';
 /**
  * Interface for RefreshTokenVerifyResult
  */
-export default interface RefreshTokenVerifiyResult {
+export default interface RefreshTokenVerifyResult {
   content: AuthToken;
   needRenew: boolean;
 }
