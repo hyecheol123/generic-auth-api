@@ -7,7 +7,7 @@
 import DBTable from '../../datatypes/DBTable';
 import TestEnv from '../../TestEnv';
 import AuthToken from '../../../src/datatypes/AuthToken';
-import {User} from '../../../src/datatypes/User';
+import User from '../../../src/datatypes/User';
 // eslint-disable-next-line node/no-unpublished-import
 import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';
