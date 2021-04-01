@@ -5,7 +5,7 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 
 /**
  * Interface for LoginCredentials
