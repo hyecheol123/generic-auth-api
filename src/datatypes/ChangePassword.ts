@@ -5,7 +5,7 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import * as ajv from 'ajv';
+import * as Ajv from 'ajv';
 
 /**
  * Interface for ChangePassword
@@ -16,7 +16,7 @@ export interface ChangePassword {
 }
 
 // Validator for JSON object containing information of ChangePassword
-export const validateChangePassword = new ajv().compile({
+export const validateChangePassword = new Ajv().compile({
   type: 'object',
   properties: {
     currentPassword: {type: 'string'},

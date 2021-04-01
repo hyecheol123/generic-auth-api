@@ -5,7 +5,7 @@
  * @author Hyecheol (Jerry) Jang <hyecheol123@gmail.com>
  */
 
-import * as ajv from 'ajv';
+import * as Ajv from 'ajv';
 import {LoginCredentials} from './LoginCredentials';
 
 /**
@@ -17,7 +17,7 @@ export interface User extends LoginCredentials {
 }
 
 // Validator for JSON object containing information of NewUserForm
-export const validateNewUserForm = new ajv().compile({
+export const validateNewUserForm = new Ajv().compile({
   type: 'object',
   properties: {
     username: {type: 'string'},
