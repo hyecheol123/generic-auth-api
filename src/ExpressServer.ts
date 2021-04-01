@@ -14,12 +14,12 @@ import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
 import adminRouter from './routes/admin';
 import authRouter from './routes/auth';
-import Session from './datatypes/Session';
-import RefreshTokenVerifiyResult from './datatypes/RefreshTokenVerifyResult';
+import {Session} from './datatypes/Session';
+import RefreshTokenVerifyResult from './datatypes/RefreshTokenVerifyResult';
 import JWTObject from './datatypes/JWTObject';
 
 /**
- * Class contains Express Application and other relevent instances/functions
+ * Class contains Express Application and other relevant instances/functions
  */
 export default class ExpressServer {
   app: express.Application;
@@ -76,7 +76,7 @@ export default class ExpressServer {
     // function to verify refresh token, return username
     this.app.locals.refreshTokenVerify = async (
       req: express.Request
-    ): Promise<RefreshTokenVerifiyResult> => {
+    ): Promise<RefreshTokenVerifyResult> => {
       if (!('X-REFRESH-TOKEN' in req.cookies)) {
         // No token provided
         throw new AuthenticationError();

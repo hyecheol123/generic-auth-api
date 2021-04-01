@@ -17,6 +17,7 @@ import {
 } from '../datatypes/LoginCredentials';
 import RefreshTokenVerifyResult from '../datatypes/RefreshTokenVerifyResult';
 import {User} from '../datatypes/User';
+import {Session, createSession} from '../datatypes/Session';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 
@@ -83,10 +84,12 @@ authRouter.post(
       );
 
       // Save Refresh Token to DB
-      await req.app.locals.dbClient.query(
-        'INSERT INTO session (token, expiresAt, username) values (?, ?, ?)',
-        [refreshToken, refreshTokenExpires, user.username]
-      );
+      const sessionInfo: Session = {
+        token: refreshToken,
+        expiresAt: refreshTokenExpires,
+        username: user.username,
+      };
+      await createSession(req.app.locals.dbClient, sessionInfo);
 
       // Response
       const cookieOption: express.CookieOptions = {
@@ -206,10 +209,12 @@ authRouter.get(
           'DELETE FROM session WHERE token = ?;',
           [req.cookies['X-REFRESH-TOKEN']]
         );
-        const query2 = req.app.locals.dbClient.query(
-          'INSERT INTO session (token, expiresAt, username) values (?, ?, ?);',
-          [refreshToken, tokenExpire, verifyResult.content.username]
-        );
+        const sessionInfo: Session = {
+          token: refreshToken,
+          expiresAt: tokenExpire,
+          username: verifyResult.content.username,
+        };
+        const query2 = createSession(req.app.locals.dbClient, sessionInfo);
         queries.push(query1);
         queries.push(query2);
 
