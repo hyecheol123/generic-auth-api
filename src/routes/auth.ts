@@ -17,12 +17,7 @@ import {
 } from '../datatypes/LoginCredentials';
 import RefreshTokenVerifyResult from '../datatypes/RefreshTokenVerifyResult';
 import {User} from '../datatypes/User';
-import {
-  Session,
-  createSession,
-  deleteSession,
-  deleteSessionNotCurrent,
-} from '../datatypes/Session';
+import Session from '../datatypes/Session';
 import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 
@@ -89,12 +84,12 @@ authRouter.post(
       );
 
       // Save Refresh Token to DB
-      const sessionInfo: Session = {
-        token: refreshToken,
-        expiresAt: refreshTokenExpires,
-        username: user.username,
-      };
-      await createSession(req.app.locals.dbClient, sessionInfo);
+      const sessionInfo = new Session(
+        refreshToken,
+        refreshTokenExpires,
+        user.username
+      );
+      await Session.create(req.app.locals.dbClient, sessionInfo);
 
       // Response
       const cookieOption: express.CookieOptions = {
@@ -124,7 +119,7 @@ authRouter.delete(
       const refreshTokenVerify = req.app.locals.refreshTokenVerify(req);
 
       // Delete from the database
-      const query = deleteSession(
+      const query = Session.delete(
         req.app.locals.dbClient,
         req.cookies['X-REFRESH-TOKEN']
       );
@@ -155,7 +150,7 @@ authRouter.delete(
       const username = (content as AuthToken).username;
 
       // Logout From other Session (Remove DB)
-      await deleteSessionNotCurrent(
+      await Session.deleteNotCurrent(
         req.app.locals.dbClient,
         req.cookies['X-REFRESH-TOKEN'],
         username
@@ -211,16 +206,16 @@ authRouter.get(
         );
 
         // Delete previous session and save new Refresh Token to DB
-        const sessionInfo: Session = {
-          token: refreshToken,
-          expiresAt: tokenExpire,
-          username: verifyResult.content.username,
-        };
-        const query1 = deleteSession(
+        const sessionInfo = new Session(
+          refreshToken,
+          tokenExpire,
+          verifyResult.content.username
+        );
+        const query1 = Session.delete(
           req.app.locals.dbClient,
           req.cookies['X-REFRESH-TOKEN']
         );
-        const query2 = createSession(req.app.locals.dbClient, sessionInfo);
+        const query2 = Session.create(req.app.locals.dbClient, sessionInfo);
         queries.push(query1);
         queries.push(query2);
 
@@ -300,7 +295,7 @@ authRouter.put(
         'UPDATE user SET password = ? WHERE username = ?;',
         [hashedPassword, username]
       );
-      const query2 = deleteSessionNotCurrent(
+      const query2 = Session.deleteNotCurrent(
         req.app.locals.dbClient,
         req.cookies['X-REFRESH-TOKEN'],
         username

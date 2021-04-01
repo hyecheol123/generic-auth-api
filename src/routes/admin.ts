@@ -12,7 +12,7 @@ import AuthenticationError from '../exceptions/AuthenticationError';
 import BadRequestError from '../exceptions/BadRequestError';
 import HTTPError from '../exceptions/HTTPError';
 import NotFoundError from '../exceptions/NotFoundError';
-import {deleteSessionAll} from '../datatypes/Session';
+import Session from '../datatypes/Session';
 
 const adminRouter = express.Router();
 
@@ -101,7 +101,7 @@ adminRouter.delete(
       }
 
       // Delete Sessions
-      await deleteSessionAll(req.app.locals.dbClient, delTarget);
+      await Session.deleteAll(req.app.locals.dbClient, delTarget);
 
       // response
       res.status(200).send();
@@ -155,7 +155,7 @@ adminRouter.put(
         'UPDATE user SET password = ? WHERE username = ?;',
         [hashedPassword, user.username]
       );
-      const query2 = await deleteSessionAll(
+      const query2 = await Session.deleteAll(
         req.app.locals.dbClient,
         user.username
       );

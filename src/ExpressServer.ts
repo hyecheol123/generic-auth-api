@@ -14,7 +14,7 @@ import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
 import adminRouter from './routes/admin';
 import authRouter from './routes/auth';
-import {readSession} from './datatypes/Session';
+import Session from './datatypes/Session';
 import RefreshTokenVerifyResult from './datatypes/RefreshTokenVerifyResult';
 import JWTObject from './datatypes/JWTObject';
 
@@ -98,14 +98,11 @@ export default class ExpressServer {
       }
 
       // Check Token in the Database
-      const dbResult = await readSession(
+      const dbResult = await Session.read(
         this.app.locals.dbClient,
         req.cookies['X-REFRESH-TOKEN']
       );
-      if (
-        dbResult.length !== 1 ||
-        new Date(dbResult[0].expiresAt) < new Date()
-      ) {
+      if (dbResult.length !== 1 || dbResult[0].expiresAt < new Date()) {
         throw new AuthenticationError();
       }
 
@@ -114,7 +111,7 @@ export default class ExpressServer {
       expectedExpire.setMinutes(new Date().getMinutes() + 20);
       delete (tokenContents as JWTObject).iat;
       delete (tokenContents as JWTObject).exp;
-      if (new Date(dbResult[0].expiresAt) < expectedExpire) {
+      if (dbResult[0].expiresAt < expectedExpire) {
         // Less than 20min left
         return {content: tokenContents, needRenew: true};
       } else {
