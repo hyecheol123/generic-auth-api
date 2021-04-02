@@ -26,7 +26,7 @@ jobs:
           - 14
         architecture:
           - x64
-          - arm64
+          - armv7l
     
     name: Node ${{ matrix.node_version }} - ${{ matrix.architecture }} on ${{ matrix.os }}
     
