@@ -83,7 +83,7 @@ These are used to lint, test, build, and run the code.
 
 1. `lint`: lint the code
 2. `lint:fix`: lint the code and try auto-fix
-3. `compile`: compile typescript codes (destination: `dist` directory)
+3. `build`: compile typescript codes (destination: `dist` directory)
 4. `clean`: remove the compiled code
 5. `start`: run the codes
 6. `test`: run the test codes
