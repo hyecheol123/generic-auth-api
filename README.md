@@ -76,6 +76,19 @@ Supported features(APIs) are listed below.
   This can be used to send user a temporal password.
 
 
+## Server Health Check
+
+- **Server Alive Check** `GET /alive`
+  
+  This API checks whether the server is alive or not.  
+  If nodejs express webserver is online, this API will return 200.
+  
+- **Server Ready Check** `GET /alive/ready`
+  
+  This API checks whether the server is ready to handle user's request or not.  
+  It checks DB connection and return 200 if there is no problem.
+
+
 ## Scripts
 
 Here is the list for supported npm/yarn scripts.
