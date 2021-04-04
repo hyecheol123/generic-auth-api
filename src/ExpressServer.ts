@@ -14,6 +14,7 @@ import HTTPError from './exceptions/HTTPError';
 import AuthToken from './datatypes/AuthToken';
 import adminRouter from './routes/admin';
 import authRouter from './routes/auth';
+import aliveRouter from './routes/alive';
 import Session from './datatypes/Session';
 import RefreshTokenVerifyResult from './datatypes/RefreshTokenVerifyResult';
 import JWTObject from './datatypes/JWTObject';
@@ -126,6 +127,7 @@ export default class ExpressServer {
     // Add List of Routers
     this.app.use('/', authRouter);
     this.app.use('/admin', adminRouter);
+    this.app.use('/alive', aliveRouter);
 
     // Default Error Handler
     this.app.use(
