@@ -8,6 +8,8 @@ Both access token and refresh token are used.
 This project only implements very basic authentication features.
 The detailed features are listed below.
 
+*Needs to setup logger, deployment, domain specific configuration (CORS, Cookie Domain/Paths), id/pw rules, and Available HTTP Methods (To Protect XST)*
+
 
 ## Supported APIs
 
