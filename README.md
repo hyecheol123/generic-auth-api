@@ -13,7 +13,8 @@ The detailed features are listed below.
 
 - **Login** `POST /login` (with username and password)  
 
-  This API let user to signin and retrieve access/refresh tokens from server.  
+  This API let user to signin and retrieve access/refresh tokens from server.
+  Upon the login request, previously generated expired token will be removed from the databases.
 
   Refresh tokens are stored in the database, while access tokens are not stored.
   On the client side, all tokens are stored as the Cookies.
@@ -104,7 +105,7 @@ These are used to lint, test, build, and run the code.
 
 ## Dependencies/Environment
 
-Developed and tested with `Ubuntu 20.04.2 LTS`, with `Node v14.16.0`.
+Developed and tested with `Ubuntu 20.04.2 LTS`, with `Node v14.17.0`.
 
 To configure the typescript development environment easily, [gts](https://github.com/google/gts) has been used.
 Based on the `gts` style rules, I modified some to enforce rules more strictly.
