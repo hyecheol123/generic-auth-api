@@ -30,14 +30,16 @@ describe('DELETE /logout/other-sessions - Logout from other sessions', () => {
     // Create Two more sessions
     const currentDate = new Date();
     MockDate.set(currentDate.getTime());
-    await request(testEnv.expressServer.app)
+    let response = await request(testEnv.expressServer.app)
       .post('/login')
       .send({username: 'user2', password: 'password12!'});
+    expect(response.status).toBe(200);
     currentDate.setSeconds(currentDate.getSeconds() + 1);
     MockDate.set(currentDate.getTime());
-    await request(testEnv.expressServer.app)
+    response = await request(testEnv.expressServer.app)
       .post('/login')
       .send({username: 'user2', password: 'password12!'});
+    expect(response.status).toBe(200);
     currentDate.setSeconds(currentDate.getSeconds() + 1);
     MockDate.set(currentDate.getTime());
   });
