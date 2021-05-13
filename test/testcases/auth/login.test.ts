@@ -139,6 +139,7 @@ describe('POST /login - Login with username and password', () => {
     // Another Login after 120m
     const currentDate = new Date();
     currentDate.setHours(currentDate.getHours() + 2);
+    currentDate.setMinutes(currentDate.getMinutes() + 1);
     MockDate.set(currentDate.getTime());
     response = await request(testEnv.expressServer.app)
       .post('/login')
