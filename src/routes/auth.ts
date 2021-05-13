@@ -88,13 +88,21 @@ authRouter.post(
         jwtOption
       );
 
-      // Save Refresh Token to DB
       const sessionInfo = new Session(
         refreshToken,
         refreshTokenExpires,
         user.username
       );
-      await Session.create(req.app.locals.dbClient, sessionInfo);
+      await Promise.all([
+        // Save Refresh Token to DB
+        Session.create(req.app.locals.dbClient, sessionInfo),
+        // Delete Previously created expired token
+        Session.deleteExpired(
+          req.app.locals.dbClient,
+          user.username,
+          new Date()
+        ),
+      ]);
 
       // Response
       const cookieOption: express.CookieOptions = {

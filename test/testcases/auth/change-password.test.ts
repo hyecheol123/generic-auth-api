@@ -31,7 +31,7 @@ describe('DELETE /logout/other-sessions - Logout from other sessions', () => {
 
     // Create Two more sessions
     currentDate = new Date();
-    MockDate.set(currentDate.getDate());
+    MockDate.set(currentDate.getTime());
     await request(testEnv.expressServer.app)
       .post('/login')
       .send({username: 'user2', password: 'password12!'});

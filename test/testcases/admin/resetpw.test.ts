@@ -38,7 +38,8 @@ describe('PUT /admin/user/{username}/password - Reset Password', () => {
 
     // Set MockDate
     currentDate = new Date();
-    MockDate.set(currentDate.getDate());
+    currentDate.setSeconds(currentDate.getSeconds() + 1);
+    MockDate.set(currentDate.getTime());
   });
 
   afterEach(async () => {

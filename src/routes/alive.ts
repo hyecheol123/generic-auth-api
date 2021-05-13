@@ -35,7 +35,8 @@ aliveRouter.get(
       } else {
         throw new HTTPError(500, 'DB Connection Fail - Not Ready');
       }
-    } /* istanbul ignore next */ catch (e) {
+    } catch (e) {
+      /* istanbul ignore next */
       next(e);
     }
   }
