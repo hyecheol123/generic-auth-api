@@ -8,6 +8,8 @@ import AuthToken from '../../../src/datatypes/AuthToken';
 import DBTable from '../../datatypes/DBTable';
 import TestEnv from '../../TestEnv';
 // eslint-disable-next-line node/no-unpublished-import
+import MockDate from 'mockdate';
+// eslint-disable-next-line node/no-unpublished-import
 import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';
 
@@ -123,6 +125,31 @@ describe('POST /login - Login with username and password', () => {
     ) {
       fail();
     }
+    done();
+  });
+
+  // Success Login - Removed Expired Token
+  test('Success - Expire Token Removed', async done => {
+    // Login Request
+    let response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user2', password: 'password12!'});
+    expect(response.status).toBe(200);
+
+    // Another Login after 120m
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() + 2);
+    MockDate.set(currentDate.getTime());
+    response = await request(testEnv.expressServer.app)
+      .post('/login')
+      .send({username: 'user2', password: 'password12!'});
+    expect(response.status).toBe(200);
+
+    // Only have one Session in the DB
+    const queryResult = await testEnv.dbClient.query(
+      "SELECT * FROM session WHERE username = 'user2'"
+    );
+    expect(queryResult.length).toBe(1);
     done();
   });
 

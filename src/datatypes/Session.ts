@@ -75,6 +75,24 @@ export default class Session {
   }
 
   /**
+   * Delete expired Sessions associated with the username
+   *
+   * @param dbClient DB Connection Pool
+   * @param username used to find Sessions associated with the username
+   * @param currentDate Date object indicates current date and time
+   */
+  static async deleteExpired(
+    dbClient: mariadb.Pool,
+    username: string,
+    currentDate: Date
+  ): Promise<void> {
+    await dbClient.query(
+      'DELETE FROM session where username = ? AND expiresAt < ?',
+      [username, currentDate]
+    );
+  }
+
+  /**
    * Retrieve Session with given token
    *
    * @param dbClient DB Connection Pool
